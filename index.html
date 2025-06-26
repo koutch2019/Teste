@@ -3,2730 +3,1150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Sistema para controle de produção hora a hora">
-    <title>Tabela de Produção Hora a Hora</title>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
+    <title>Controle Financeiro Pessoal</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --verde: #c8e6c9;
-            --vermelho: #ffcdd2;
-            --azul-claro: #e3f2fd;
-            --cinza-claro: #f2f2f2;
-            --cinza-borda: #ddd;
-            --verde-escuro: #2e7d32;
-            --laranja-obs: #ff9800;
-            --vermelho-obs: #d32f2f;
-        }
-
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            line-height: 1.6;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        header {
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        h1, h2, h3 {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: #f5f5f5;
             color: #333;
+            font-size: 14px;
         }
-
-        main {
+        .container {
+            max-width: 100%;
+            display: none; /* Escondido até o login */
+        }
+        #login-container {
+            max-width: 300px;
+            margin: 50px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        #totalBalance {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .positive { color: #2ecc71; }
+        .negative { color: #e74c3c; }
+        .card {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            width: 100%;
+            margin-top: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .actions button {
             flex: 1;
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-top: 15px;
         }
-
         th, td {
-            border: 1px solid var(--cinza-borda);
-            padding: 10px;
-            text-align: center;
-            vertical-align: top;
-        }
-
-        th {
-            background-color: var(--cinza-claro);
-            font-weight: bold;
-        }
-
-        input, select {
-            width: 100%;
             padding: 8px;
-            box-sizing: border-box;
-            text-align: center;
-            border: 1px solid var(--cinza-borda);
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: #4a90e2;
-            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
-        }
-
-        .verde {
-            background-color: var(--verde);
-        }
-
-        .vermelho {
-            background-color: var(--vermelho);
-        }
-
-        .buttons {
-            margin: 20px 0;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        button {
-            padding: 10px 20px;
-            cursor: pointer;
-            background-color: #4a90e2;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 14px;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #357ab8;
-        }
-
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-
-        .calendar {
-            margin-top: 40px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .calendar-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .calendar-nav h3 {
-            margin: 0;
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-        }
-
-        .calendar-day {
-            border: 1px solid var(--cinza-borda);
-            padding: 10px;
-            min-height: 80px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            position: relative;
-        }
-
-        .calendar-day:hover {
-            background-color: #f5f5f5;
-        }
-
-        .calendar-day-header {
-            font-weight: bold;
-            text-align: center;
-            background-color: var(--cinza-claro);
-            padding: 10px;
-        }
-
-        .day-number {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .has-data {
-            background-color: #e8f5e9;
-        }
-
-        .current-day {
-            background-color: var(--azul-claro);
-            border: 2px solid #4a90e2;
-        }
-
-        .saved-data {
-            font-size: 12px;
-            position: absolute;
-            bottom: 5px;
-            right: 5px;
-            display: flex;
-            gap: 3px;
-        }
-
-        .prod-ok::before {
-            content: '✔';
-            color: var(--verde-escuro);
-            font-weight: bold;
-        }
-
-        .prod-nok::before {
-            content: '✖';
-            color: #c62828;
-            font-weight: bold;
-        }
-
-        .revezamento-data::before {
-            content: 'R';
-            color: orange;
-            font-weight: bold;
-        }
-
-        .obs-critica::before {
-            content: '⚠';
-            color: var(--vermelho-obs);
-            font-weight: bold;
-        }
-
-        .obs-simples::before {
-            content: 'i';
-            color: var(--laranja-obs);
-            font-weight: bold;
-            font-style: italic;
-        }
-
-        #selected-date-production, #selected-date-revezamento {
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        .alert {
-            padding: 10px 15px;
-            margin: 10px 0;
-            border-radius: 4px;
-            display: none;
-        }
-
-        .alert-success {
-            background-color: var(--verde);
-            color: var(--verde-escuro);
-        }
-
-        .alert-error {
-            background-color: var(--vermelho);
-            color: #c62828;
-        }
-
-        .alert-info {
-            background-color: #e0f2f7;
-            color: #2196f3;
-        }
-
-        .main-panel {
-            display: none;
-        }
-
-        .main-panel.active {
-            display: block;
-        }
-
-        .category-header {
-            background-color: var(--cinza-claro);
-            font-weight: bold;
+            border-bottom: 1px solid #ddd;
             text-align: left;
-            padding-left: 10px;
-            border-bottom: 2px solid #bbb;
-            border-top: 2px solid #bbb;
         }
-
-        .no-input {
-            background-color: var(--cinza-claro);
-            color: #666;
-            font-style: italic;
-        }
-
-        #production-table tfoot th,
-        #production-table tfoot td {
-            font-weight: bold;
-            background-color: var(--cinza-claro);
-            vertical-align: middle;
-        }
-        #production-table tfoot th {
-            text-align: right;
-            padding-right: 10px;
-        }
-
-        #shift-table {
-            table-layout: fixed;
-            width: 100%;
-        }
-
-        #shift-table th,
-        #shift-table td {
-            white-space: normal;
-            word-wrap: break-word;
-        }
-
-        #shift-table th:first-child,
-        #shift-table td:first-child {
-            width: 25%;
-            text-align: left;
-            padding-left: 5px;
-        }
-
-        #shift-table th:not(:first-child),
-        #shift-table td:not(:first-child) {
-            width: 15%;
-            font-size: 14px;
-        }
-
-        #shift-table select {
-            width: calc(100% - 6px);
-            padding: 3px;
-            box-sizing: border-box;
-            text-align: center;
-            border: 1px solid var(--cinza-borda);
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        #shift-table select[multiple] {
-            height: 80px;
-            overflow-y: auto;
-        }
-
-        #shift-table select option:checked {
-            background-color: var(--verde);
-            color: var(--verde-escuro);
-            font-weight: bold;
-        }
-
-        .shift-taken-option {
-            text-decoration: line-through;
-            color: #d32f2f;
-            font-weight: normal;
-        }
-
-        .shift-taken-option:hover {
-            background-color: #ffebee;
-            cursor: not-allowed;
-        }
-
-        #shift-table select option:disabled {
-            background-color: #f0f0f0;
-            color: #aaa;
-            cursor: not-allowed;
-            text-decoration: line-through;
-        }
-
-        #shift-table select:focus {
-            border-color: #4a90e2;
-            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
-        }
-
-        .shift-moved {
-            background-color: #fff9c4;
-            transition: background-color 0.5s ease;
-        }
-
-        .observacao-container {
-            margin: 20px 0;
-            padding: 15px;
-            border: 1px solid var(--cinza-borda);
-            border-radius: 8px;
-            background-color: #fff;
-        }
-
-        .observacao-container label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        #observacao {
-            width: 100%;
-            padding: 10px;
-            box-sizing: border-box;
-            border: 1px solid var(--cinza-borda);
-            border-radius: 4px;
-            font-family: Arial, sans-serif;
-            min-height: 80px;
+        .income { color: #2ecc71; }
+        .expense { color: #e74c3c; }
+        .paid { text-decoration: line-through; opacity: 0.7; }
+        .delete-btn { background-color: #e74c3c; }
+        .edit-btn { background-color: #f39c12; }
+        .pay-btn { background-color: #2ecc71; }
+        canvas { max-width: 100%; }
+        .tab-buttons {
+            display: flex;
             margin-bottom: 10px;
         }
-
-        .obs-critica-checkbox {
-            display: flex;
-            align-items: center;
+        .tab-button {
+            flex: 1;
+            background: #ddd;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+        .tab-button.active {
+            background: #3498db;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        #logout-btn {
+            background: #e74c3c;
             margin-top: 10px;
         }
-
-        .obs-critica-checkbox input[type="checkbox"] {
-            width: auto;
-            margin-right: 8px;
-            transform: scale(1.2);
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            width: 18px;
-            height: 18px;
-            outline: none;
-            cursor: pointer;
-            position: relative;
-            top: -1px;
-        }
-
-        .obs-critica-checkbox input[type="checkbox"]:checked {
-            background-color: #dc3545;
-            border-color: #dc3545;
-        }
-
-        .obs-critica-checkbox input[type="checkbox"]:checked::after {
-            content: '✔';
-            color: white;
-            font-size: 12px;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .obs-critica-checkbox label {
-            font-weight: normal;
-            margin-bottom: 0;
-            cursor: pointer;
-            color: #555;
-        }
-
-        @media (max-width: 768px) {
-            #shift-table th:first-child,
-            #shift-table td:first-child {
-                width: 30%;
-            }
-            #shift-table th:not(:first-child),
-            #shift-table td:not(:first-child) {
-                width: 14%;
-                font-size: 12px;
-                padding: 5px;
-            }
-            #shift-table select {
-                font-size: 11px;
-                padding: 1px;
-                height: 60px;
-            }
-            #shift-table th {
-                vertical-align: bottom;
-            }
-        }
-
-        @media (max-width: 500px) {
-            #revezamento {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-            #shift-table {
-                width: 150%;
-                min-width: 600px;
-            }
-            #shift-table th:first-child,
-            #shift-table td:first-child {
-                width: 150px;
-            }
-            #shift-table th:not(:first-child),
-            #shift-table td:not(:first-child) {
-                width: 90px;
-                font-size: 11px;
-            }
-            #shift-table select {
-                font-size: 11px;
-                height: 50px;
-            }
-
-            #production {
-                overflow-x: auto;
-            }
-            #production-table {
-                width: 100%;
-                min-width: auto;
-            }
-            #production-table th,
-            #production-table td {
-                min-width: auto;
-                white-space: normal;
-            }
-        }
-
-        footer {
-            margin-top: 50px;
-            padding: 20px;
-            text-align: center;
-            color: #666;
-            font-size: 0.9em;
-            border-top: 1px solid #eee;
-        }
-
-        .settings-icon {
-            font-size: 24px;
-            cursor: pointer;
-            color: #4a90e2;
-            transition: color 0.3s;
-            margin-left: 10px;
-        }
-
-        .settings-icon:hover {
-            color: #357ab8;
-        }
-
-        .settings-section {
-            padding: 20px;
-            border: 1px solid var(--cinza-borda);
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-
-        .settings-section h2 {
-            margin-top: 0;
-            margin-bottom: 15px;
-        }
-
-        .settings-form label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        .settings-form input[type="text"] {
-            margin-bottom: 10px;
-            width: calc(100% - 20px);
-        }
-
-        .settings-list ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .settings-list li {
-            background-color: var(--cinza-claro);
-            padding: 10px;
-            margin-bottom: 5px;
-            border-radius: 4px;
+        .category-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
         }
-
-        .settings-list li button {
-            background-color: #dc3545;
-            padding: 5px 10px;
-            font-size: 12px;
+        .category-item:last-child {
+            border-bottom: none;
         }
-
-        .settings-list li button:hover {
-            background-color: #c82333;
-        }
-
-        .time-slot {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            padding: 10px;
-            border: 1px solid var(--cinza-borda);
-            border-radius: 4px;
-            align-items: center;
-            flex-wrap: wrap;
-            cursor: grab;
-            background-color: white;
-        }
-
-        .time-slot.dragging {
-            opacity: 0.5;
-            border: 2px dashed #4a90e2;
-        }
-
-        .time-slot > div {
-            display: flex;
-            flex-direction: column;
-            min-width: 100px;
-        }
-
-        .time-slot label {
-            font-size: 12px;
-            margin-bottom: 3px;
-        }
-
-        .time-slot input[type="time"] {
-            padding: 5px;
-            border: 1px solid var(--cinza-borda);
-            border-radius: 4px;
-        }
-
-        .time-slot input[type="text"] {
-            padding: 5px;
-            border: 1px solid var(--cinza-borda);
-            border-radius: 4px;
-            min-width: 150px;
-        }
-
-        .time-slot button {
-            padding: 5px 10px;
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            align-self: flex-end;
-            margin-left: auto;
-        }
-
-        .time-slot button:hover {
-            background-color: #c82333;
-        }
-
-        .time-slot-checkbox {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            min-height: 40px;
-        }
-        .time-slot-checkbox label {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: normal;
-            margin-bottom: 0;
-        }
-        .time-slot-checkbox input[type="checkbox"] {
+        .category-item button {
             width: auto;
-            margin-right: 5px;
-            transform: scale(1.2);
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            width: 18px;
-            height: 18px;
-            outline: none;
-            cursor: pointer;
-            position: relative;
-            top: -1px;
-        }
-        .time-slot-checkbox input[type="checkbox"]:checked {
-            background-color: #4a90e2;
-            border-color: #4a90e2;
-        }
-        .time-slot-checkbox input[type="checkbox"]:checked::after {
-            content: '✔';
-            color: white;
-            font-size: 12px;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .revezamento-descanso {
-            background-color: var(--cinza-claro);
-            font-style: italic;
-            color: #666;
-        }
-
-        .product-select-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-        }
-
-        .product-select-group label {
-            flex-shrink: 0;
-        }
-
-        .product-select-group select {
-            flex-grow: 1;
-            min-width: 150px;
-        }
-
-        .product-select-group .remove-product-btn {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 4px;
             padding: 5px 10px;
-            cursor: pointer;
-            font-size: 1.2em;
-            line-height: 1;
+            margin-top: 0;
         }
 
-        .product-select-group .remove-product-btn:hover {
-            background-color: #c82333;
+        /* Estilos do Calendário */
+        #calendar-container {
+            margin-top: 20px;
+            text-align: center;
         }
-
-        .add-product-btn {
-            padding: 8px 15px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .add-product-btn:hover {
-            background-color: #218838;
-        }
-
-        .posto-rotation-item {
+        #calendar-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 10px;
             margin-bottom: 10px;
+        }
+        #calendar-header button {
+            width: auto;
+            padding: 5px 10px;
+            margin: 0;
+            background-color: #555;
+        }
+        #calendar-header button:hover {
+            background-color: #777;
+        }
+        #calendar-grid {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden; /* Para bordas arredondadas */
+        }
+        #calendar-grid th, #calendar-grid td {
+            border: 1px solid #eee;
             padding: 8px;
-            border: 1px solid var(--cinza-borda);
-            border-radius: 4px;
+            text-align: center;
+            vertical-align: top;
+            height: 60px; /* Altura fixa para as células */
+            position: relative;
+            cursor: pointer; /* Indica que é clicável */
+        }
+        #calendar-grid th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+        #calendar-grid td.current-month {
+            background-color: #fff;
+        }
+        #calendar-grid td.other-month {
             background-color: #f9f9f9;
+            color: #bbb;
+            cursor: default; /* Não clicável */
         }
-
-        .posto-rotation-item label {
-            font-weight: bold;
-            flex-shrink: 0;
-            margin-bottom: 0;
-        }
-
-        .posto-rotation-item select {
-            flex-grow: 1;
-            max-width: 200px;
-        }
-
-        #production-table input.verde {
-            background-color: var(--verde) !important;
-            color: var(--verde-escuro);
+        #calendar-grid td.today {
+            background-color: #e0f7fa; /* Azul claro */
+            border: 2px solid #00bcd4; /* Ciano */
             font-weight: bold;
         }
-
-        #production-table input.vermelho {
-            background-color: var(--vermelho) !important;
-            color: #c62828;
+        #calendar-grid td.has-bill {
+            background-color: #ffe0b2; /* Laranja claro */
+            border: 2px solid #ff9800; /* Laranja */
             font-weight: bold;
         }
-
-        #production-table input.verde::placeholder,
-        #production-table input.vermelho::placeholder {
-            color: inherit;
-            opacity: 0.7;
+        #calendar-grid td.has-bill.today {
+            background-color: #ffccbc; /* Salmão claro */
+            border: 2px solid #ff5722; /* Laranja avermelhado */
+        }
+        .bill-indicator {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8em;
+            color: #e74c3c;
+            font-weight: bold;
+            white-space: nowrap; /* Evita quebra de linha */
         }
 
-        @media (max-width: 768px) {
-            .product-select-group {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .product-select-group select {
-                width: 100%;
-            }
-            .product-select-group label {
-                margin-bottom: 5px;
-            }
-
-            .posto-rotation-item {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .posto-rotation-item select {
-                width: 100%;
-                max-width: none;
-            }
+        /* Estilos do Modal de Detalhes da Conta */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #888;
+            background: none; /* Remove background padrão do botão */
+            border: none; /* Remove borda padrão do botão */
+            width: auto; /* Ajusta largura para o X */
+            padding: 0; /* Remove padding padrão */
+            margin: 0; /* Remove margin padrão */
+        }
+        .modal-close-btn:hover {
+            color: #333;
+        }
+        .bill-item {
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        .bill-item:last-child {
+            border-bottom: none;
+        }
+        .bill-item strong {
+            display: block;
+            font-size: 1.1em;
+            margin-bottom: 2px;
+        }
+        .bill-item span {
+            color: #555;
+            font-size: 0.9em;
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
-    <div id="login-screen" style="
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: #f4f7f6;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-        flex-direction: column;
-    ">
-        <div style="
-            background-color: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            text-align: center;
-        ">
-            <h2>Bem-vindo!</h2>
-            <p>Por favor, insira a senha para acessar o sistema.</p>
-            <input type="password" id="password-input" placeholder="Digite a senha" style="
-                padding: 10px;
-                margin: 15px 0;
-                width: 250px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                font-size: 16px;
-            ">
-            <button id="login-button" style="
-                padding: 10px 25px;
-                background-color: #4a90e2;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                font-size: 16px;
-                transition: background-color 0.3s;
-            ">Entrar</button>
-            <div id="login-alert" class="alert alert-error" style="display:none; margin-top: 15px;"></div>
+    <div id="login-container">
+        <h2 style="text-align: center;">Controle Financeiro</h2>
+        <div class="form-group">
+            <label for="login-password">Senha:</label>
+            <input type="password" id="login-password" placeholder="Digite sua senha">
+        </div>
+        <button id="login-btn">Entrar</button>
+        <div id="login-message" style="color: red; margin-top: 10px; text-align: center;"></div>
+    </div>
+
+    <div class="container" id="app-container">
+        <header>
+            <h1 style="margin:0">Controle Financeiro</h1>
+            <div>Saldo: <span id="totalBalance" class="positive">R$ 0,00</span></div>
+            <button id="logout-btn">Sair</button>
+        </header>
+
+        <div class="tab-buttons">
+            <button class="tab-button active" data-tab="transactions">Transações</button>
+            <button class="tab-button" data-tab="paid">Pagas</button>
+            <button class="tab-button" data-tab="reports">Relatórios</button>
+            <button class="tab-button" data-tab="categories">Categorias</button>
+        </div>
+
+        <div id="transactions" class="tab-content active">
+            <div class="card">
+                <h3 style="margin-top:0">Nova Transação</h3>
+                <form id="transactionForm">
+                    <div class="form-group">
+                        <label for="type">Tipo:</label>
+                        <select id="type" required>
+                            <option value="income">Entrada</option>
+                            <option value="expense">Saída</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="amount">Valor (R$):</label>
+                        <input type="number" id="amount" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Descrição:</label>
+                        <input type="text" id="description" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Categoria:</label>
+                        <select id="category">
+                            </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="date">Data:</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="frequency">Frequência:</label>
+                        <select id="frequency" required>
+                            <option value="unique">Única</option>
+                            <option value="monthly">Mensal</option>
+                        </select>
+                    </div>
+                    <button type="submit">Adicionar</button>
+                </form>
+            </div>
+
+            <div class="actions">
+                <button id="importBtn">📤 Importar</button>
+                <button id="exportBtn">📥 Exportar</button>
+                <input type="file" id="fileInput" accept=".json" style="display:none">
+            </div>
+
+            <div class="card">
+                <h3 style="margin-top:0">Transações Pendentes</h3>
+                <table id="transactionsTable">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Valor</th>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Data</th>
+                            <th>Frequência</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="paid" class="tab-content">
+            <div class="card">
+                <h3 style="margin-top:0">Transações Pagas</h3>
+                <table id="paidTransactionsTable">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Valor</th>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Data</th>
+                            <th>Pago em</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paidTransactionsBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="reports" class="tab-content">
+            <div class="card">
+                <h3 style="margin-top:0">Gráfico de Transações</h3>
+                <canvas id="transactionsChart"></canvas>
+            </div>
+            <div class="card">
+                <h3 style="margin-top:0">Resumo por Categoria</h3>
+                <canvas id="categoryChart"></canvas>
+            </div>
+            
+            <div class="card" id="calendar-card">
+                <h3 style="margin-top:0">Calendário de Contas</h3>
+                <div id="calendar-container">
+                    <div id="calendar-header">
+                        <button id="prevMonth">Mês Anterior</button>
+                        <h4 id="currentMonthYear"></h4>
+                        <button id="nextMonth">Próximo Mês</button>
+                    </div>
+                    <table id="calendar-grid">
+                        <thead>
+                            <tr>
+                                <th>Dom</th>
+                                <th>Seg</th>
+                                <th>Ter</th>
+                                <th>Qua</th>
+                                <th>Qui</th>
+                                <th>Sex</th>
+                                <th>Sáb</th>
+                            </tr>
+                        </thead>
+                        <tbody id="calendar-body">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="categories" class="tab-content">
+            <div class="card">
+                <h3 style="margin-top:0">Gerenciar Categorias</h3>
+                <div class="form-group">
+                    <label for="newCategoryName">Nova Categoria:</label>
+                    <input type="text" id="newCategoryName" placeholder="Nome da categoria">
+                </div>
+                <button id="addCategoryBtn">Adicionar Categoria</button>
+                <hr style="margin: 15px 0;">
+                <h4 style="margin-top:0;">Categorias Cadastradas:</h4>
+                <div id="categoryList">
+                    </div>
+            </div>
+        </div>
+
+        <div id="editModal" class="modal">
+            <div class="modal-content">
+                <button class="modal-close-btn" onclick="closeEditModal()">✖</button>
+                <h3 style="margin-top:0">Editar Transação</h3>
+                <form id="editForm">
+                    <input type="hidden" id="edit-id">
+                    <div class="form-group">
+                        <label for="edit-type">Tipo:</label>
+                        <select id="edit-type" required>
+                            <option value="income">Entrada</option>
+                            <option value="expense">Saída</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-amount">Valor (R$):</label>
+                        <input type="number" id="edit-amount" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-description">Descrição:</label>
+                        <input type="text" id="edit-description" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-category">Categoria:</label>
+                        <select id="edit-category">
+                            </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-date">Data:</label>
+                        <input type="date" id="edit-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-frequency">Frequência:</label>
+                        <select id="edit-frequency" required>
+                            <option value="unique">Única</option>
+                            <option value="monthly">Mensal</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button type="submit" style="flex:1;">Salvar</button>
+                        <button type="button" id="cancelEdit" style="flex:1; background:#95a5a6;" onclick="closeEditModal()">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="billDetailsModal" class="modal">
+            <div class="modal-content">
+                <button class="modal-close-btn" onclick="closeBillDetailsModal()">✖</button>
+                <h3 id="billDetailsTitle">Contas para o dia</h3>
+                <div id="billDetailsList">
+                    </div>
+                <p id="noBillsMessage" style="text-align: center; color: #888; display: none;">Nenhuma conta para este dia.</p>
+            </div>
         </div>
     </div>
-    <header>
-        <h1>Tabela de Produção Hora a Hora</h1>
-        <div>
-            <i class="fas fa-chart-bar settings-icon" onclick="openPanel('production')" title="Visualizar Produção"></i>
-            <i class="fas fa-users-cog settings-icon" onclick="openPanel('revezamento')" title="Visualizar Revezamento"></i>
-            <i class="fas fa-clock settings-icon" onclick="openPanel('time-settings')" title="Configurar Horários"></i>
-            <i class="fas fa-cog settings-icon" onclick="openPanel('settings')" title="Configurações"></i>
-        </div>
-    </header>
-
-    <main>
-        <div id="production" class="main-panel active">
-            <section>
-                <div class="buttons">
-                    <button id="save-btn" onclick="salvarDados()">Salvar Dados</button>
-                    <button id="generate-pdf-production-btn" onclick="gerarPdfProducao()">Gerar PDF Produção</button>
-                </div>
-
-                <div id="date-display">
-                    <strong>Data selecionada: </strong>
-                    <span id="selected-date-production"></span>
-                </div>
-
-                <div id="multi-product-selection" style="margin: 15px 0;">
-                    <div class="product-select-group" data-product-index="0">
-                        <label for="produto-selecionado-0">Produto:</label>
-                        <select id="produto-selecionado-0" class="produto-selecionado" onchange="handleProductSelectChange(0)">
-                            <option value="" disabled selected>Selecione um produto (Obrigatório)</option>
-                        </select>
-                        <button type="button" class="remove-product-btn" onclick="removeProductSelection(this)" style="display:none;">&times;</button>
-                    </div>
-                    <button type="button" class="add-product-btn" onclick="addProductSelection()">+ Adicionar Produto</button>
-                </div>
-
-                <div id="alert-production" class="alert" role="alert"></div>
-
-                <table id="production-table">
-                    <thead>
-                        <tr>
-                            <th>Hora</th>
-                            <th>Meta de Produção</th>
-                            <th>Quantidade Produzida</th>
-                            <th>Diferença</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <th colspan="2">Total Geral do Turno</th>
-                            <td id="total-produzido">0</td>
-                            <td id="total-diferenca">0</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </section>
-
-            <div class="observacao-container">
-                <label for="observacao">Observações:</label>
-                <textarea id="observacao" placeholder="Adicione aqui quaisquer observações relevantes sobre a produção"></textarea>
-                <div class="obs-critica-checkbox">
-                    <input type="checkbox" id="obs-critica-checkbox">
-                    <label for="obs-critica-checkbox">Observação Crítica?</label>
-                </div>
-            </div>
-            <section class="calendar">
-                <h2>Histórico de Produção</h2>
-                <p>Clique em um dia para carregar os dados salvos</p>
-                <div class="calendar-nav">
-                    <button onclick="prevMonth('production')" aria-label="Mês anterior produção">◀</button>
-                    <h3 id="current-month-year-production"></h3>
-                    <button onclick="nextMonth('production')" aria-label="Próximo mês produção">▶</button>
-                </div>
-                <div id="calendar-production" class="calendar-grid" aria-live="polite"></div>
-            </section>
-        </div>
-
-        <div id="revezamento" class="main-panel">
-            <section>
-                <h2>Controle de Revezamento</h2>
-
-                <div class="buttons">
-                    <button onclick="salvarRevezamento()">Salvar Revezamento</button>
-                    <button id="gerar-revezamento-automatico-btn" onclick="gerarRevezamentoAutomacoUI()">Gerar Revezamento Automático</button>
-                    <button id="generate-pdf-revezamento-btn" onclick="gerarPdfRevezamento()">Gerar PDF Revezamento</button>
-                </div>
-
-                <div id="date-display-revezamento">
-                    <strong>Data selecionada: </strong>
-                    <span id="selected-date-revezamento"></span>
-                </div>
-
-                <div id="alert-revezamento" class="alert" role="alert"></div>
-
-                <table id="shift-table">
-                    <thead>
-                        <tr>
-                            <th>Posto de Trabalho</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-            </section>
-            <section class="calendar">
-                <h2>Histórico de Revezamento</h2>
-                <p>Clique em um dia para carregar os dados salvos</p>
-                <div class="calendar-nav">
-                    <button onclick="prevMonth('revezamento')" aria-label="Mês anterior revezamento">◀</button>
-                    <h3 id="current-month-year-revezamento"></h3>
-                    <button onclick="nextMonth('revezamento')" aria-label="Próximo mês revezamento">▶</button>
-                </div>
-                <div id="calendar-revezamento" class="calendar-grid" aria-live="polite"></div>
-            </section>
-        </div>
-
-        <div id="settings" class="main-panel">
-            <div class="settings-section">
-                <h2>Gerenciar Postos de Trabalho</h2>
-                <form id="posto-form" class="settings-form">
-                    <label for="posto-name">Nome do Posto:</label>
-                    <input type="text" id="posto-name" placeholder="Ex: Posto 1" required>
-                    <button type="submit">Adicionar Posto</button>
-                </form>
-                <div class="settings-list">
-                    <h3>Postos Cadastrados:</h3>
-                    <ul id="postos-list">
-                    </ul>
-                </div>
-            </div>
-
-            <div class="settings-section">
-                <h2>Gerenciar Funcionários</h2>
-                <form id="funcionario-form" class="settings-form">
-                    <label for="funcionario-name">Nome do Funcionário:</label>
-                    <input type="text" id="funcionario-name" placeholder="Ex: João Silva" required>
-                    <button type="submit">Adicionar Funcionário</button>
-                </form>
-                <div class="settings-list">
-                    <h3>Funcionários Cadastrados:</h3>
-                    <ul id="funcionarios-list">
-                    </ul>
-                </div>
-            </div>
-
-            <div class="settings-section">
-                <h2>Gerenciar Produtos</h2>
-                <form id="produto-form" class="settings-form">
-                    <label for="produto-name">Nome do Produto:</label>
-                    <input type="text" id="produto-name" placeholder="Ex: Produto A" required>
-
-                    <h3 style="margin-top: 20px;">Metas por Horário</h3>
-                    <div id="produto-meta-inputs" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    </div>
-
-                    <button type="submit" style="margin-top: 15px;">Adicionar Produto</button>
-                </form>
-                <div class="settings-list">
-                    <h3>Produtos Cadastrados:</h3>
-                    <ul id="produtos-list">
-                    </ul>
-                </div>
-            </div>
-
-            <div class="settings-section">
-                <h2>Configurar Revezamento Automático por Posto</h2>
-                <p>Defina para qual posto o funcionário alocado no posto de <strong>origem</strong> será remanejado no <strong>próximo turno ativo</strong>.</p>
-                <div id="posto-rotation-config-list">
-                    </div>
-                <div class="buttons">
-                    <button type="button" onclick="saveShiftRotationConfig()">Salvar Configuração de Revezamento</button>
-                </div>
-                <div id="alert-shift-rotation-config" class="alert" role="alert"></div>
-            </div>
-            <div class="settings-section">
-                <h2>Importar/Exportar Dados</h2>
-                <div class="buttons">
-                    <button onclick="exportAllData()">Exportar Todos os Dados</button>
-                    <input type="file" id="importFileInput" accept=".json" style="display: none;">
-                    <button onclick="document.getElementById('importFileInput').click()">Importar Dados</button>
-                </div>
-                <div id="alert-settings-io" class="alert" role="alert"></div>
-            </div>
-
-            <div class="settings-section">
-                <h2>Outras Ações</h2>
-                <button id="clear-data-btn" onclick="clearAllData()" style="background-color: #dc3545;">Limpar Todos os Dados</button>
-            </div>
-        </div>
-
-        <div id="time-settings" class="main-panel">
-            <div class="settings-section">
-                <h2>Configuração de Horários de Produção</h2>
-                <p>Arraste para reordenar. Marque "Descanso" para horários sem produção (almoço, ceia, etc.).</p>
-                <form id="production-time-form">
-                    <div id="production-time-slots">
-                    </div>
-                    <div class="buttons">
-                        <button type="button" onclick="addTimeSlot('production')">Adicionar Período</button>
-                        <button type="button" onclick="saveTimes('production')">Salvar Horários</button>
-                    </div>
-                </form>
-            </div>
-
-            <div class="settings-section">
-                <h2>Configuração de Horários de Revezamento</h2>
-                <p>Arraste para reordenar. Marque "Descanso" para horários que não são de revezamento de funcionários (ex: horários de refeição).</p>
-                <form id="shift-time-form">
-                    <div id="shift-time-slots">
-                    </div>
-                    <div class="buttons">
-                        <button type="button" onclick="addTimeSlot('shift')">Adicionar Turno</button>
-                        <button type="button" onclick="saveTimes('shift')">Salvar Turnos</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </main>
-
-    <footer>
-        <p>&copy; 2025 Tabela de Produção Hora a Hora e Revezamento. (Ricardo) Todos os direitos reservados.</p>
-    </footer>
 
     <script>
-        console.log("Script iniciado. Aguardando DOMContentLoaded.");
-
-        // Constantes para as chaves do localStorage
-        const STORAGE_KEYS = {
-            POSTOS: 'postos',
-            FUNCIONARIOS: 'funcionarios',
-            PRODUTOS: 'produtos',
-            PRODUCTION_DATA: 'productionData',
-            REVEZAMENTO_DATA: 'revezamentoData',
-            PRODUCTION_TIMES: 'productionTimeSlots',
-            SHIFT_TIMES: 'shiftTimeSlots',
-            SHIFT_ROTATION_CONFIG: 'shiftRotationConfig'
-        };
-
-        // Função para exibir alertas (geral)
-        function showAlert(message, type, tabId, timeout = 5000) {
-            const alertDiv = document.getElementById(`alert-${tabId}`);
-            if (alertDiv) {
-                alertDiv.textContent = message;
-                alertDiv.className = `alert alert-${type}`;
-                alertDiv.style.display = 'block';
-                setTimeout(() => {
-                    alertDiv.style.display = 'none';
-                }, timeout);
-            } else {
-                console.warn(`Alerta para ${tabId} não encontrado. Mensagem: ${message}`);
-            }
-        }
-
-        // Função para exibir alertas (específico para import/export)
-        function showAlertIO(message, type, timeout = 5000) {
-            const alertDiv = document.getElementById('alert-settings-io');
-            if (alertDiv) {
-                alertDiv.textContent = message;
-                alertDiv.className = `alert alert-${type}`;
-                alertDiv.style.display = 'block';
-                setTimeout(() => {
-                    alertDiv.style.display = 'none';
-                }, timeout);
-            } else {
-                console.warn(`Alerta para settings-io não encontrado. Mensagem: ${message}`);
-            }
-        }
-
-        // Função para abrir painéis (substitui openTab)
-        function openPanel(panelName) {
-            try {
-                // Antes de abrir qualquer painel, verifique se o usuário está logado
-                if (!checkLogin()) {
-                    // Se não estiver logado, não faça nada ou redirecione para o login
-                    // A função checkLogin já mostra a tela de login se necessário
-                    return;
-                }
-
-                console.log(`Abrindo painel: ${panelName}`);
-                const panels = document.getElementsByClassName('main-panel');
-                for (let i = 0; i < panels.length; i++) {
-                    panels[i].classList.remove('active');
-                }
-                const targetPanel = document.getElementById(panelName);
-                if (targetPanel) {
-                    targetPanel.classList.add('active');
-                } else {
-                    console.error(`Painel com ID "${panelName}" não encontrado.`);
-                }
-
-                if (panelName === 'revezamento') {
-                    updateShiftTableSelects();
-                    carregarDadosRevezamento(formatDate(selectedDateRevezamento));
-                } else if (panelName === 'time-settings') {
-                    renderTimeSlots('production');
-                    renderTimeSlots('shift');
-                } else if (panelName === 'settings') {
-                    renderProdutoMetaInputs();
-                    renderShiftRotationConfigUI();
-                } else if (panelName === 'production') {
-                    carregarDadosProducao(formatDate(selectedDateProduction));
-                }
-            } catch (e) {
-                console.error("Erro em openPanel:", e);
-            }
-        }
-
-        // Variáveis globais para o calendário e dados
-        let currentMonthProduction = new Date().getMonth();
-        let currentYearProduction = new Date().getFullYear();
-        let selectedDateProduction = new Date();
-        let productionData = {};
-        let currentMonthRevezamento = new Date().getMonth();
-        let currentYearRevezamento = new Date().getFullYear();
-        let selectedDateRevezamento = new Date();
-        let revezamentoData = {};
-
-        // Variáveis para dados de configurações
-        let postos = [];
-        let funcionarios = [];
-        let produtos = {};
-
-        // Variáveis para configuração de horários
-        let productionTimeSlots = [];
-        let shiftTimeSlots = [];
-        let shiftRotationConfig = {};
-
-        // NOVAS VARIÁVEIS PARA MULTI-SELEÇÃO DE PRODUTOS
-        let currentProductSelections = []; // Armazena os valores dos produtos selecionados atualmente
-
-        // Drag and Drop variables
-        let draggedItem = null;
-        let originalParent = null;
-
-        // Função para formatar a data
-        function formatDate(date) {
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
-            return `${day}/${month}/${year}`;
-        }
-
-        // Função para inicializar dados padrão
-        function initializeData() {
-            console.log("Executando initializeData()");
-            try {
-                // Carrega dados existentes ou inicializa padrões
-                postos = JSON.parse(localStorage.getItem(STORAGE_KEYS.POSTOS)) || ['Limpeza', 'Diafragma', 'Resistência', 'Transferência'];
-                localStorage.setItem(STORAGE_KEYS.POSTOS, JSON.stringify(postos));
-                
-                funcionarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.FUNCIONARIOS)) || ['Douglas', 'Ricardo', 'Ronaldo', 'Clayton'];
-                localStorage.setItem(STORAGE_KEYS.FUNCIONARIOS, JSON.stringify(funcionarios));
-                
-                // Carrega horários de produção
-                productionTimeSlots = JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTION_TIMES)) || [
-                    { start: "22:00", end: "23:00", label: "22:00 - 23:00", hourKey: "2200-2300", isBreak: false },
-                    { start: "23:00", end: "00:00", label: "23:00 - 00:00", hourKey: "2300-0000", isBreak: false },
-                    { start: "00:00", end: "01:00", label: "00:00 - 01:00", hourKey: "0000-0100", isBreak: false },
-                    { start: "01:00", end: "01:40", label: "01:00 - 01:40", hourKey: "0100-0140", isBreak: false },
-                    { start: "01:40", end: "02:40", label: "Ceia", hourKey: "0140-0240", isBreak: true },
-                    { start: "02:40", end: "04:00", label: "02:40 - 04:00", hourKey: "0240-0400", isBreak: false },
-                    { start: "04:00", end: "05:00", label: "04:00 - 05:00", hourKey: "0400-0500", isBreak: false },
-                    { start: "05:00", end: "06:00", label: "05:00 - 06:00", hourKey: "0500-0600", isBreak: false }
-                ];
-                localStorage.setItem(STORAGE_KEYS.PRODUCTION_TIMES, JSON.stringify(productionTimeSlots));
-                
-                // Carrega turnos de revezamento
-                shiftTimeSlots = JSON.parse(localStorage.getItem(STORAGE_KEYS.SHIFT_TIMES)) || [
-                    { start: "22:00", end: "00:00", label: "Turno 1 (22:00 - 00:00)", isBreak: false },
-                    { start: "00:00", end: "02:00", label: "Turno 2 (00:00 - 02:00)", isBreak: false },
-                    { start: "02:00", end: "04:00", label: "Ceia (02:00 - 04:00)", isBreak: true },
-                    { start: "04:00", end: "05:00", label: "Turno 3 (04:00 - 05:00)", isBreak: false },
-                    { start: "05:00", end: "06:00", label: "Turno 4 (05:00 - 06:00)", isBreak: false }
-                ];
-                localStorage.setItem(STORAGE_KEYS.SHIFT_TIMES, JSON.stringify(shiftTimeSlots));
-                
-                // Carrega produtos
-                produtos = JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUTOS)) || {};
-                if (Object.keys(produtos).length === 0) {
-                    produtos = { 'Produto A': { nome: 'Produto A', metas: {} } };
-                    productionTimeSlots.forEach(slot => {
-                        produtos['Produto A'].metas[slot.hourKey] = slot.isBreak ? 0 : 100;
-                    });
-                    localStorage.setItem(STORAGE_KEYS.PRODUTOS, JSON.stringify(produtos));
-                }
-                
-                // Carrega dados de produção e revezamento
-                productionData = JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTION_DATA)) || {};
-                revezamentoData = JSON.parse(localStorage.getItem(STORAGE_KEYS.REVEZAMENTO_DATA)) || {};
-                
-                // Carrega configuração de revezamento automático
-                shiftRotationConfig = JSON.parse(localStorage.getItem(STORAGE_KEYS.SHIFT_ROTATION_CONFIG)) || {};
-                postos.forEach(posto => {
-                    if (!(posto in shiftRotationConfig)) {
-                        shiftRotationConfig[posto] = posto;
-                    }
-                });
-                localStorage.setItem(STORAGE_KEYS.SHIFT_ROTATION_CONFIG, JSON.stringify(shiftRotationConfig));
-                
-                console.log("Dados inicializados com sucesso!");
-            } catch (e) {
-                console.error("Erro durante a inicialização dos dados:", e);
-            }
-        }
-
-        // Função para limpar todos os dados
-        function clearAllData() {
-            if (confirm('Tem certeza que deseja apagar TODOS os dados? Esta ação não pode ser desfeita.')) {
-                localStorage.clear();
-                location.reload();
-            }
-        }
-
-        // Função para renderizar o calendário
-        function renderCalendar(tab) {
-            try {
-                let currentMonth, currentYear, calendarId, monthYearId, selectedDate, dataStorage, dateDisplayId;
-
-                if (tab === 'production') {
-                    currentMonth = currentMonthProduction;
-                    currentYear = currentYearProduction;
-                    calendarId = 'calendar-production';
-                    monthYearId = 'current-month-year-production';
-                    selectedDate = selectedDateProduction;
-                    dataStorage = productionData;
-                    dateDisplayId = 'selected-date-production';
-                } else if (tab === 'revezamento') {
-                    currentMonth = currentMonthRevezamento;
-                    currentYear = currentYearRevezamento;
-                    calendarId = 'calendar-revezamento';
-                    monthYearId = 'current-month-year-revezamento';
-                    selectedDate = selectedDateRevezamento;
-                    dataStorage = revezamentoData;
-                    dateDisplayId = 'selected-date-revezamento';
-                } else {
-                    console.error("Tipo de calendário desconhecido:", tab);
-                    return;
-                }
-
-                const calendarGrid = document.getElementById(calendarId);
-                const monthYearElement = document.getElementById(monthYearId);
-                const dateDisplayElement = document.getElementById(dateDisplayId);
-
-                if (!calendarGrid || !monthYearElement || !dateDisplayElement) {
-                    console.error(`Elementos do calendário para ${tab} não encontrados.`);
-                    return;
-                }
-
-                calendarGrid.innerHTML = '';
-
-                const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-                monthYearElement.textContent = `${monthNames[currentMonth]} ${currentYear}`;
-
-                const firstDay = new Date(currentYear, currentMonth, 1);
-                const lastDay = new Date(currentYear, currentMonth + 1, 0);
-
-                const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-                dayNames.forEach(day => {
-                    const dayHeader = document.createElement('div');
-                    dayHeader.classList.add('calendar-day-header');
-                    dayHeader.textContent = day;
-                    calendarGrid.appendChild(dayHeader);
-                });
-
-                for (let i = 0; i < firstDay.getDay(); i++) {
-                    calendarGrid.appendChild(document.createElement('div'));
-                }
-
-                for (let day = 1; day <= lastDay.getDate(); day++) {
-                    const dayElement = document.createElement('div');
-                    dayElement.classList.add('calendar-day');
-                    dayElement.innerHTML = `<div class="day-number">${day}</div>`;
-
-                    const fullDate = new Date(currentYear, currentMonth, day);
-                    const formattedDate = formatDate(fullDate);
-
-                    if (dataStorage[formattedDate]) {
-                        dayElement.classList.add('has-data');
-                        const savedDataIcons = document.createElement('div');
-                        savedDataIcons.classList.add('saved-data');
-
-                        if (tab === 'production') {
-                            const totalDiferenca = dataStorage[formattedDate].totalDiferenca || 0;
-                            const observacao = dataStorage[formattedDate].observacao || '';
-                            const isCritica = dataStorage[formattedDate].isCritica || false;
-
-                            if (totalDiferenca >= 0) {
-                                savedDataIcons.innerHTML += '<span class="prod-ok" title="Meta Atingida"></span>';
-                            } else {
-                                savedDataIcons.innerHTML += '<span class="prod-nok" title="Meta Não Atingida"></span>';
-                            }
-                            // Adiciona ícone de observação
-                            if (observacao) {
-                                if (isCritica) {
-                                    savedDataIcons.innerHTML += '<span class="obs-critica" title="Observação Crítica"></span>';
-                                } else {
-                                    savedDataIcons.innerHTML += '<span class="obs-simples" title="Observação Simples"></span>';
-                                }
-                            }
-                        } else if (tab === 'revezamento') {
-                            savedDataIcons.innerHTML += '<span class="revezamento-data" title="Revezamento Salvo"></span>';
-                        }
-                        dayElement.appendChild(savedDataIcons);
-                    }
-
-                    if (fullDate.toDateString() === selectedDate.toDateString()) {
-                        dayElement.classList.add('current-day');
-                    }
-
-                    dayElement.onclick = () => {
-                        if (tab === 'production') {
-                            selectedDateProduction = fullDate;
-                            carregarDadosProducao(formattedDate);
-                            renderCalendar('production');
-                        } else if (tab === 'revezamento') {
-                            selectedDateRevezamento = fullDate;
-                            carregarDadosRevezamento(formattedDate);
-                            renderCalendar('revezamento');
-                        }
-                    };
-                    calendarGrid.appendChild(dayElement);
-                }
-            } catch (e) {
-                console.error("Erro ao renderizar calendário:", e);
-                showAlert("Erro ao carregar o calendário. Consulte o console para mais detalhes.", "error", tab);
-            }
-        }
-
-        function prevMonth(tab) {
-            if (tab === 'production') {
-                currentMonthProduction--;
-                if (currentMonthProduction < 0) {
-                    currentMonthProduction = 11;
-                    currentYearProduction--;
-                }
-                renderCalendar('production');
-            } else if (tab === 'revezamento') {
-                currentMonthRevezamento--;
-                if (currentMonthRevezamento < 0) {
-                    currentMonthRevezamento = 11;
-                    currentYearRevezamento--;
-                }
-                renderCalendar('revezamento');
-            }
-        }
-
-        function nextMonth(tab) {
-            if (tab === 'production') {
-                currentMonthProduction++;
-                if (currentMonthProduction > 11) {
-                    currentMonthProduction = 0;
-                    currentYearProduction++;
-                }
-                renderCalendar('production');
-            } else if (tab === 'revezamento') {
-                currentMonthRevezamento++;
-                if (currentMonthRevezamento > 11) {
-                    currentMonthRevezamento = 0;
-                    currentYearRevezamento++;
-                }
-                renderCalendar('revezamento');
-            }
-        }
-
-        // Funções para carregar e salvar dados de Produção
-        function carregarDadosProducao(data) {
-            const tableBody = document.querySelector('#production-table tbody');
-            tableBody.innerHTML = ''; // Limpa a tabela existente
-            document.getElementById('selected-date-production').textContent = data;
-
-            // Carrega os horários de produção
-            const currentProductionTimes = loadTimes('production');
-
-            currentProductionTimes.forEach(slot => {
-                const row = tableBody.insertRow();
-                row.insertCell().textContent = slot.label;
-
-                const metaCell = row.insertCell();
-                const produzidoCell = row.insertCell();
-                const diferencaCell = row.insertCell();
-
-                // Adiciona a classe de descanso se for um break
-                if (slot.isBreak) {
-                    row.classList.add('no-input');
-                    metaCell.textContent = 'Descanso';
-                    produzidoCell.textContent = 'Descanso';
-                    diferencaCell.textContent = 'Descanso';
-                } else {
-                    // Input para meta
-                    const metaInput = document.createElement('input');
-                    metaInput.type = 'number';
-                    metaInput.className = 'meta-producao';
-                    metaInput.min = '0';
-                    // Ajuste aqui para carregar a meta do produto selecionado ou 0 se não houver
-                    // A meta padrão agora será definida pela primeira seleção de produto
-                    metaInput.value = 0; // Será sobrescrito abaixo se houver dados salvos ou produto selecionado
-                    metaInput.dataset.hourKey = slot.hourKey;
-                    metaInput.onchange = updateTotalsAndDifferences;
-                    metaCell.appendChild(metaInput);
-
-                    // Input para quantidade produzida
-                    const produzidoInput = document.createElement('input');
-                    produzidoInput.type = 'number';
-                    produzidoInput.className = 'quantidade-produzida';
-                    produzidoInput.min = '0';
-                    produzidoInput.onchange = updateTotalsAndDifferences;
-                    produzidoCell.appendChild(produzidoInput);
-
-                    // Célula de diferença (calculada automaticamente)
-                    diferencaCell.textContent = '0';
-                    diferencaCell.dataset.hourKey = slot.hourKey;
-                }
-            });
-
-            // Carrega os dados salvos para a data se existirem
-            let savedProductSelection = null;
-            if (productionData[data]) {
-                const savedInputs = productionData[data].inputs;
-                savedProductSelection = productionData[data].selectedProduct; // Novo: recupera o produto salvo
-
-                const metaInputs = document.querySelectorAll('#production-table .meta-producao');
-                const produzidoInputs = document.querySelectorAll('#production-table .quantidade-produzida');
-
-                metaInputs.forEach(input => {
-                    const hourKey = input.dataset.hourKey;
-                    if (savedInputs && savedInputs[hourKey] && savedInputs[hourKey].meta !== undefined) {
-                        input.value = savedInputs[hourKey].meta;
-                    }
-                });
-
-                produzidoInputs.forEach(input => {
-                    const hourKey = input.closest('tr').cells[0].textContent.replace(/[^0-9]/g, ''); 
-                    if (savedInputs && savedInputs[hourKey] && savedInputs[hourKey].produzido !== undefined) {
-                        input.value = savedInputs[hourKey].produzido;
-                    }
-                });
-
-                // Carrega observações
-                const savedObservacao = productionData[data].observacao || '';
-                const savedIsCritica = productionData[data].isCritica || false;
-                document.getElementById('observacao').value = savedObservacao;
-                document.getElementById('obs-critica-checkbox').checked = savedIsCritica;
-            } else {
-                // Limpa observações se não houver dados para a data
-                document.getElementById('observacao').value = '';
-                document.getElementById('obs-critica-checkbox').checked = false;
-            }
-
-            // Atualiza o seletor de produto e as metas
-            const primaryProductSelect = document.getElementById('produto-selecionado-0');
-            if (primaryProductSelect) {
-                // Limpa seleções anteriores e reinicia
-                currentProductSelections = [];
-                const existingProductGroups = document.querySelectorAll('.product-select-group:not([data-product-index="0"])');
-                existingProductGroups.forEach(group => group.remove());
-
-                if (savedProductSelection) {
-                    primaryProductSelect.value = savedProductSelection;
-                    currentProductSelections[0] = savedProductSelection;
-                } else {
-                    primaryProductSelect.value = ""; // Volta para a opção "Selecione"
-                    currentProductSelections[0] = "";
-                }
-                // Chama handleProductSelectChange para aplicar as metas do produto selecionado
-                handleProductSelectChange(0);
-            }
-
-            updateTotalsAndDifferences();
-        }
-
-        function updateTotalsAndDifferences() {
-            const rows = document.querySelectorAll('#production-table tbody tr');
-            let ultimaHoraValida = { produzido: 0, meta: 0, diferenca: 0 };
-
-            rows.forEach((row) => {
-                if (row.classList.contains('no-input')) return;
-
-                const metaInput = row.querySelector('.meta-producao');
-                const produzidoInput = row.querySelector('.quantidade-produzida');
-                const diferencaCell = row.cells[3];
-
-                const meta = parseFloat(metaInput.value) || 0;
-                const produzido = parseFloat(produzidoInput.value) || 0;
-                const diferenca = produzido - meta;
-
-                // Atualiza a célula de diferença
-                diferencaCell.textContent = diferenca;
-
-                // Aplica cores na célula de diferença
-                if (diferenca >= 0) {
-                    diferencaCell.classList.remove('vermelho');
-                    diferencaCell.classList.add('verde');
-                } else {
-                    diferencaCell.classList.remove('verde');
-                    diferencaCell.classList.add('vermelho');
-                }
-
-                // Armazena os valores da última hora válida (não é descanso)
-                ultimaHoraValida = { produzido, meta, diferenca };
-            });
-
-            // Atualiza o total geral com os valores da última hora válida
-            document.getElementById('total-produzido').textContent = ultimaHoraValida.produzido;
-            document.getElementById('total-diferenca').textContent = ultimaHoraValida.diferenca;
-
-            // Aplica cor no total da diferença
-            const totalDiferencaCell = document.getElementById('total-diferenca');
-            if (ultimaHoraValida.diferenca >= 0) {
-                totalDiferencaCell.classList.remove('vermelho');
-                totalDiferencaCell.classList.add('verde');
-            } else {
-                totalDiferencaCell.classList.remove('verde');
-                totalDiferencaCell.classList.add('vermelho');
-            }
-        }
-
-        function salvarDados() {
-            try {
-                const data = document.getElementById('selected-date-production').textContent;
-                const selectedProductElement = document.getElementById('produto-selecionado-0');
-                const selectedProduct = selectedProductElement ? selectedProductElement.value : '';
-
-                if (!selectedProduct) {
-                    showAlert("Por favor, selecione um produto antes de salvar os dados.", "error", "production");
-                    return; // Impede o salvamento se nenhum produto for selecionado
-                }
-
-                const metaInputs = document.querySelectorAll('#production-table .meta-producao');
-                const produzidoInputs = document.querySelectorAll('#production-table .quantidade-produzida');
-                const observacaoText = document.getElementById('observacao').value;
-                const isCritica = document.getElementById('obs-critica-checkbox').checked;
-
-                const inputsData = {};
-                metaInputs.forEach(input => {
-                    const hourKey = input.dataset.hourKey || input.closest('tr').cells[0].textContent.replace(/[^0-9]/g, ''); // Fallback para hourKey
-                    inputsData[hourKey] = inputsData[hourKey] || {};
-                    inputsData[hourKey].meta = parseFloat(input.value) || 0;
-                });
-                produzidoInputs.forEach(input => {
-                    const hourKey = input.closest('tr').cells[0].textContent.replace(/[^0-9]/g, ''); // Fallback para hourKey
-                    inputsData[hourKey] = inputsData[hourKey] || {};
-                    inputsData[hourKey].produzido = parseFloat(input.value) || 0;
-                });
-
-                // Incluir os slots de descanso com meta 0 e produzido 0
-                const currentProductionTimes = loadTimes('production');
-                currentProductionTimes.filter(slot => slot.isBreak).forEach(slot => {
-                    inputsData[slot.hourKey] = { meta: 0, produzido: 0 };
-                });
-
-                // Obtém os totais da última hora válida
-                const rows = document.querySelectorAll('#production-table tbody tr');
-                let ultimaHoraValida = { produzido: 0, meta: 0, diferenca: 0 };
-                
-                rows.forEach((row) => {
-                    if (row.classList.contains('no-input')) return;
-                    
-                    const metaInput = row.querySelector('.meta-producao');
-                    const produzidoInput = row.querySelector('.quantidade-produzida');
-                    
-                    ultimaHoraValida = {
-                        produzido: parseFloat(produzidoInput.value) || 0,
-                        meta: parseFloat(metaInput.value) || 0,
-                        diferenca: (parseFloat(produzidoInput.value) || 0) - (parseFloat(metaInput.value) || 0)
-                    };
-                });
-
-                productionData[data] = {
-                    inputs: inputsData,
-                    totalProduzido: ultimaHoraValida.produzido,
-                    totalDiferenca: ultimaHoraValida.diferenca,
-                    observacao: observacaoText,
-                    isCritica: isCritica,
-                    selectedProduct: selectedProduct // Salva o produto selecionado
-                };
-                localStorage.setItem(STORAGE_KEYS.PRODUCTION_DATA, JSON.stringify(productionData));
-                renderCalendar('production'); // Re-render para mostrar o ícone de salvo
-                showAlert("Dados de produção salvos com sucesso!", "success", "production");
-            } catch (e) {
-                console.error("Erro ao salvar dados de produção:", e);
-                showAlert("Erro ao salvar dados de produção. Verifique o console para detalhes.", "error", "production");
-            }
-        }
-
-        // Funções para gerenciar Postos de Trabalho
-        function loadPostos() {
-            postos = JSON.parse(localStorage.getItem(STORAGE_KEYS.POSTOS)) || [];
-            renderPostosList();
-        }
-
-        function renderPostosList() {
-            const list = document.getElementById('postos-list');
-            list.innerHTML = '';
-            postos.forEach((posto, index) => {
-                const li = document.createElement('li');
-                li.textContent = posto;
-                const deleteBtn = document.createElement('button');
-                deleteBtn.textContent = 'Remover';
-                deleteBtn.onclick = () => removePosto(index);
-                li.appendChild(deleteBtn);
-                list.appendChild(li);
-            });
-        }
-
-        function addPosto(event) {
-            event.preventDefault();
-            const input = document.getElementById('posto-name');
-            const newPosto = input.value.trim();
-            if (newPosto && !postos.includes(newPosto)) {
-                postos.push(newPosto);
-                localStorage.setItem(STORAGE_KEYS.POSTOS, JSON.stringify(postos));
-                renderPostosList();
-                updateShiftTableSelects();
-                shiftRotationConfig[newPosto] = newPosto;
-                localStorage.setItem(STORAGE_KEYS.SHIFT_ROTATION_CONFIG, JSON.stringify(shiftRotationConfig));
-                renderShiftRotationConfigUI();
-                input.value = '';
-                showAlert("Posto de trabalho adicionado!", "success", "settings");
-            } else if (newPosto) {
-                showAlert("Este posto de trabalho já existe.", "error", "settings");
-            }
-        }
-
-        function removePosto(index) {
-            if (confirm(`Tem certeza que deseja remover o posto "${postos[index]}"? Isso pode afetar os revezamentos existentes.`)) {
-                const postoToRemove = postos[index];
-                postos.splice(index, 1);
-                localStorage.setItem(STORAGE_KEYS.POSTOS, JSON.stringify(postos));
-                renderPostosList();
-                updateShiftTableSelects();
-                delete shiftRotationConfig[postoToRemove];
-                for (const key in shiftRotationConfig) {
-                    if (shiftRotationConfig[key] === postoToRemove) {
-                        shiftRotationConfig[key] = key;
-                    }
-                }
-                localStorage.setItem(STORAGE_KEYS.SHIFT_ROTATION_CONFIG, JSON.stringify(shiftRotationConfig));
-                renderShiftRotationConfigUI();
-                showAlert("Posto de trabalho removido!", "info", "settings");
-            }
-        }
-
-        // Funções para gerenciar Funcionários
-        function loadFuncionarios() {
-            funcionarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.FUNCIONARIOS)) || [];
-            renderFuncionariosList();
-        }
-
-        function renderFuncionariosList() {
-            const list = document.getElementById('funcionarios-list');
-            list.innerHTML = '';
-            funcionarios.forEach((funcionario, index) => {
-                const li = document.createElement('li');
-                li.textContent = funcionario;
-                const deleteBtn = document.createElement('button');
-                deleteBtn.textContent = 'Remover';
-                deleteBtn.onclick = () => removeFuncionario(index);
-                li.appendChild(deleteBtn);
-                list.appendChild(li);
-            });
-        }
-
-        function addFuncionario(event) {
-            event.preventDefault();
-            const input = document.getElementById('funcionario-name');
-            const newFuncionario = input.value.trim();
-            if (newFuncionario && !funcionarios.includes(newFuncionario)) {
-                funcionarios.push(newFuncionario);
-                localStorage.setItem(STORAGE_KEYS.FUNCIONARIOS, JSON.stringify(funcionarios));
-                renderFuncionariosList();
-                updateShiftTableSelects();
-                input.value = '';
-                showAlert("Funcionário adicionado!", "success", "settings");
-            } else if (newFuncionario) {
-                showAlert("Este funcionário já existe.", "error", "settings");
-            }
-        }
-
-        function removeFuncionario(index) {
-            if (confirm(`Tem certeza que deseja remover o funcionário "${funcionarios[index]}"? Isso pode afetar os revezamentos existentes.`)) {
-                funcionarios.splice(index, 1);
-                localStorage.setItem(STORAGE_KEYS.FUNCIONARIOS, JSON.stringify(funcionarios));
-                renderFuncionariosList();
-                updateShiftTableSelects();
-                showAlert("Funcionário removido!", "info", "settings");
-            }
-        }
-
-        // Funções para gerenciar Produtos
-        function loadProdutos() {
-            const storedProdutos = localStorage.getItem(STORAGE_KEYS.PRODUTOS);
-            if (storedProdutos) {
-                produtos = JSON.parse(storedProdutos);
-            } else {
-                produtos = {};
-            }
-            renderProdutosList();
-            renderProdutoSelects();
-            renderProdutoMetaInputs();
-        }
-
-        function renderProdutosList() {
-            const list = document.getElementById('produtos-list');
-            list.innerHTML = '';
-            for (const nomeProduto in produtos) {
-                const li = document.createElement('li');
-                li.textContent = produtos[nomeProduto].nome;
-                const deleteBtn = document.createElement('button');
-                deleteBtn.textContent = 'Remover';
-                deleteBtn.onclick = () => removeProduto(nomeProduto);
-                li.appendChild(deleteBtn);
-                list.appendChild(li);
-            }
-        }
-
-        function renderProdutoSelects() {
-            const selects = document.querySelectorAll('.produto-selecionado');
-            selects.forEach(selectElement => {
-                const selectedValue = selectElement.value;
-                // Mantém a primeira opção desabilitada e selecionada como placeholder
-                selectElement.innerHTML = '<option value="" disabled selected>Selecione um produto (Obrigatório)</option>';
-                for (const nomeProduto in produtos) {
-                    const option = document.createElement('option');
-                    option.value = nomeProduto;
-                    option.textContent = produtos[nomeProduto].nome;
-                    selectElement.appendChild(option);
-                }
-                if (selectedValue && produtos[selectedValue]) {
-                    selectElement.value = selectedValue;
-                }
-            });
-        }
-
-        function renderProdutoMetaInputs() {
-            const container = document.getElementById('produto-meta-inputs');
-            if (!container) return;
-            container.innerHTML = '';
-
-            const currentProductionTimes = loadTimes('production');
-
-            currentProductionTimes.forEach(slot => {
-                if (!slot.isBreak) {
-                    const div = document.createElement('div');
-                    const label = document.createElement('label');
-                    label.textContent = `Meta para ${slot.label}:`;
-                    const input = document.createElement('input');
-                    input.type = 'number';
-                    input.min = '0';
-                    input.placeholder = 'Meta';
-                    input.id = `meta-${slot.hourKey}`;
-                    input.name = `meta-${slot.hourKey}`;
-                    input.dataset.hourKey = slot.hourKey;
-
-                    div.appendChild(label);
-                    div.appendChild(input);
-                    container.appendChild(div);
-                }
-            });
-        }
-
-        function addProduto(event) {
-            event.preventDefault();
-            const inputNome = document.getElementById('produto-name');
-            const nomeProduto = inputNome.value.trim();
-
-            if (!nomeProduto) {
-                showAlert("Nome do produto não pode ser vazio.", "error", "settings");
-                return;
-            }
-
-            if (produtos[nomeProduto]) {
-                showAlert("Este produto já existe.", "error", "settings");
-                return;
-            }
-
-            const novasMetas = {};
-            document.querySelectorAll('#produto-meta-inputs input[type="number"]').forEach(input => {
-                novasMetas[input.dataset.hourKey] = parseFloat(input.value) || 0;
-            });
-
-            const currentProductionTimes = loadTimes('production');
-            currentProductionTimes.filter(slot => slot.isBreak).forEach(slot => {
-                novasMetas[slot.hourKey] = 0;
-            });
-
-            produtos[nomeProduto] = {
-                nome: nomeProduto,
-                metas: novasMetas
-            };
-
-            localStorage.setItem(STORAGE_KEYS.PRODUTOS, JSON.stringify(produtos));
-            renderProdutosList();
-            renderProdutoSelects();
-            inputNome.value = '';
-            document.querySelectorAll('#produto-meta-inputs input[type="number"]').forEach(input => input.value = '');
-            showAlert("Produto adicionado com sucesso!", "success", "settings");
-        }
-
-        function removeProduto(nomeProduto) {
-            if (confirm(`Tem certeza que deseja remover o produto "${nomeProduto}"?`)) {
-                delete produtos[nomeProduto];
-                localStorage.setItem(STORAGE_KEYS.PRODUTOS, JSON.stringify(produtos));
-                renderProdutosList();
-                renderProdutoSelects();
-                showAlert("Produto removido!", "info", "settings");
-            }
-        }
-
-        function handleProductSelectChange(index) {
-            const selectElement = document.getElementById(`produto-selecionado-${index}`);
-            const selectedProduct = selectElement.value;
-            currentProductSelections[index] = selectedProduct;
-
-            if (selectedProduct && produtos[selectedProduct]) {
-                const metaInputs = document.querySelectorAll('#production-table .meta-producao');
-                metaInputs.forEach(input => {
-                    const hourKey = input.dataset.hourKey;
-                    input.value = produtos[selectedProduct].metas[hourKey] || 0;
-                });
-            } else {
-                // Se nenhum produto for selecionado ou o produto não existir, zera as metas
-                document.querySelectorAll('#production-table .meta-producao').forEach(input => input.value = 0);
-            }
-            updateTotalsAndDifferences();
-        }
-
-        function addProductSelection() {
-            const container = document.getElementById('multi-product-selection');
-            const currentIndex = container.querySelectorAll('.product-select-group').length;
-
-            const newGroup = document.createElement('div');
-            newGroup.classList.add('product-select-group');
-            newGroup.dataset.productIndex = currentIndex;
-            newGroup.innerHTML = `
-                <label for="produto-selecionado-${currentIndex}">Produto:</label>
-                <select id="produto-selecionado-${currentIndex}" class="produto-selecionado" onchange="handleProductSelectChange(${currentIndex})">
-                    <option value="" disabled selected>Selecione um produto (Obrigatório)</option>
-                </select>
-                <button type="button" class="remove-product-btn" onclick="removeProductSelection(this)">&times;</button>
-            `;
-            container.insertBefore(newGroup, document.querySelector('.add-product-btn'));
-            renderProdutoSelects();
-            // Garante que o botão de remover apareça para a nova seleção (se não for a primeira)
-            const removeBtn = newGroup.querySelector('.remove-product-btn');
-            if (removeBtn && currentIndex > 0) {
-                removeBtn.style.display = 'inline-block';
-            }
-        }
-
-        function removeProductSelection(button) {
-            const groupToRemove = button.closest('.product-select-group');
-            const indexToRemove = parseInt(groupToRemove.dataset.productIndex);
-            groupToRemove.remove();
-
-            currentProductSelections.splice(indexToRemove, 1);
-
-            document.querySelectorAll('.product-select-group').forEach((group, newIndex) => {
-                group.dataset.productIndex = newIndex;
-                group.querySelector('label').setAttribute('for', `produto-selecionado-${newIndex}`);
-                group.querySelector('select').id = `produto-selecionado-${newIndex}`;
-                group.querySelector('select').setAttribute('onchange', `handleProductSelectChange(${newIndex})`);
-                // Garante que o botão de remoção apareça para todos exceto o primeiro, se houver mais de um.
-                const removeBtn = group.querySelector('.remove-product-btn');
-                if (removeBtn) {
-                    removeBtn.style.display = (newIndex > 0 || document.querySelectorAll('.product-select-group').length > 1) ? 'inline-block' : 'none';
-                }
-            });
-            // Esconde o botão de remoção para o primeiro item se for o único.
-            const firstRemoveBtn = document.querySelector('.product-select-group[data-product-index="0"] .remove-product-btn');
-            if (document.querySelectorAll('.product-select-group').length === 1 && firstRemoveBtn) {
-                firstRemoveBtn.style.display = 'none';
-            }
-
-
-            if (currentProductSelections.length > 0) {
-                handleProductSelectChange(0);
-            } else {
-                document.querySelectorAll('#production-table .meta-producao').forEach(input => input.value = 0);
-                document.querySelectorAll('#production-table .quantidade-produzida').forEach(input => input.value = 0);
-                updateTotalsAndDifferences();
-            }
-        }
-
-        // Funções para a Tabela de Revezamento
-        function carregarDadosRevezamento(data) {
-            const tableHeadRow = document.querySelector('#shift-table thead tr');
-            const tableBody = document.querySelector('#shift-table tbody');
-            tableBody.innerHTML = '';
-            document.getElementById('selected-date-revezamento').textContent = data;
-
-            const currentShiftTimes = loadTimes('shift');
-
-            tableHeadRow.innerHTML = '<th>Posto de Trabalho</th>';
-            currentShiftTimes.forEach(turno => {
-                const th = document.createElement('th');
-                th.textContent = turno.label;
-                tableHeadRow.appendChild(th);
-            });
-
-            const savedShiftData = revezamentoData[data] || {};
-
-            postos.forEach(posto => {
-                const row = tableBody.insertRow();
-                const postoCell = row.insertCell();
-                postoCell.textContent = posto;
-
-                currentShiftTimes.forEach(turno => {
-                    const cell = row.insertCell();
-                    if (turno.isBreak) {
-                        cell.classList.add('revezamento-descanso');
-                        cell.textContent = 'Descanso';
-                    } else {
-                        const select = document.createElement('select');
-                        select.dataset.posto = posto;
-                        select.dataset.turno = turno.label;
-                        select.onchange = handleShiftSelectChange;
-                        cell.appendChild(select);
-
-                        const defaultOption = document.createElement('option');
-                        defaultOption.value = "";
-                        defaultOption.textContent = "Selecione";
-                        select.appendChild(defaultOption);
-
-                        funcionarios.forEach(func => {
-                            const option = document.createElement('option');
-                            option.value = func;
-                            option.textContent = func;
-                            select.appendChild(option);
-                        });
-
-                        if (savedShiftData[posto] && savedShiftData[posto][turno.label]) {
-                            select.value = savedShiftData[posto][turno.label];
-                        }
-                    }
-                });
-            });
-            updateShiftTableSelects();
-        }
-
-        function salvarRevezamento() {
-            try {
-                const data = document.getElementById('selected-date-revezamento').textContent;
-                const shiftSelects = document.querySelectorAll('#shift-table select');
-                const currentShiftData = {};
-
-                shiftSelects.forEach(select => {
-                    const posto = select.dataset.posto;
-                    const turnoLabel = select.dataset.turno;
-                    const funcionario = select.value;
-
-                    if (!currentShiftData[posto]) {
-                        currentShiftData[posto] = {};
-                    }
-                    currentShiftData[posto][turnoLabel] = funcionario;
-                });
-
-                revezamentoData[data] = currentShiftData;
-                localStorage.setItem(STORAGE_KEYS.REVEZAMENTO_DATA, JSON.stringify(revezamentoData));
-                renderCalendar('revezamento');
-                showAlert("Revezamento salvo com sucesso!", "success", "revezamento");
-            } catch (e) {
-                console.error("Erro ao salvar revezamento:", e);
-                showAlert("Erro ao salvar revezamento. Verifique o console para detalhes.", "error", "revezamento");
-            }
-        }
-
-        function updateShiftTableSelects() {
-            const allSelects = document.querySelectorAll('#shift-table select');
-            const occupiedEmployees = new Set();
-
-            allSelects.forEach(select => {
-                if (select.value) {
-                    occupiedEmployees.add(select.value);
-                }
-            });
-
-            allSelects.forEach(select => {
-                const currentSelected = select.value;
-                Array.from(select.options).forEach(option => {
-                    if (option.value && option.value !== currentSelected && occupiedEmployees.has(option.value)) {
-                        option.disabled = true;
-                        option.classList.add('shift-taken-option');
-                    } else {
-                        option.disabled = false;
-                        option.classList.remove('shift-taken-option');
-                    }
-                });
-            });
-        }
-
-        function handleShiftSelectChange() {
-            updateShiftTableSelects();
-        }
-
-        function updateShiftTableSelectsAfterSettingsChange() {
-            carregarDadosRevezamento(formatDate(selectedDateRevezamento));
-        }
-
-        // Funções para gerenciamento de Horários (Produção e Revezamento)
-        function addTimeSlot(type) {
-            const containerId = type === 'production' ? 'production-time-slots' : 'shift-time-slots';
-            const container = document.getElementById(containerId);
-            const div = document.createElement('div');
-            div.classList.add('time-slot');
-            div.setAttribute('draggable', true);
-            div.innerHTML = `
-                <div>
-                    <label>Início:</label>
-                    <input type="time" class="time-start" value="08:00">
-                </div>
-                <div>
-                    <label>Fim:</label>
-                    <input type="time" class="time-end" value="17:00">
-                </div>
-                <div>
-                    <label>Rótulo:</label>
-                    <input type="text" class="time-label" placeholder="Ex: 17:00 - 18:00" value="">
-                </div>
-                <div class="time-slot-checkbox">
-                    <label>
-                        <input type="checkbox" class="is-break-checkbox"> Descanso
-                    </label>
-                </div>
-                <button type="button" onclick="removeTimeSlot(this)">Remover</button>
-            `;
-            container.appendChild(div);
-            addDragListeners(div);
-        }
-
-        function removeTimeSlot(button) {
-            button.closest('.time-slot').remove();
-        }
-
-        function saveTimes(type) {
-            const containerId = type === 'production' ? 'production-time-slots' : 'shift-time-slots';
-            const container = document.getElementById(containerId);
-            const slots = [];
-            const labelsMap = new Set();
-            let hasError = false;
-
-            Array.from(container.children).forEach(div => {
-                const start = div.querySelector('.time-start').value;
-                const end = div.querySelector('.time-end').value;
-                let label = div.querySelector('.time-label').value.trim();
-                const isBreak = div.querySelector('.is-break-checkbox').checked;
-
-                if (!start || !end) {
-                    showAlert("Preencha todos os horários de início e fim.", "error", "time-settings");
-                    hasError = true;
-                    return;
-                }
-
-                if (!label) {
-                    label = `${start} - ${end}`;
-                }
-
-                if (labelsMap.has(label)) {
-                    showAlert(`O rótulo "${label}" já existe. Por favor, use rótulos únicos.`, "error", "time-settings");
-                    hasError = true;
-                    return;
-                }
-                labelsMap.add(label);
-
-                const hourKey = label.replace(/[^0-9a-zA-Z]/g, '');
-
-                slots.push({ start, end, label, hourKey, isBreak });
-            });
-
-            if (hasError) return;
-
-            // REMOVIDA A ORDENAÇÃO PARA MANTER A SEQUÊNCIA DE CADASTRO/DRAG AND DROP
-            // slots.sort((a, b) => {
-            //     const [h1, m1] = a.start.split(':').map(Number);
-            //     const [h2, m2] = b.start.split(':').map(Number);
-            //     if (h1 !== h2) return h1 - h2;
-            //     return m1 - m2;
-            // });
-
-            if (type === 'production') {
-                productionTimeSlots = slots;
-                localStorage.setItem(STORAGE_KEYS.PRODUCTION_TIMES, JSON.stringify(productionTimeSlots));
-                for (const prodKey in produtos) {
-                    const newMetas = {};
-                    slots.forEach(slot => {
-                        if (produtos[prodKey].metas[slot.hourKey] !== undefined) {
-                            newMetas[slot.hourKey] = produtos[prodKey].metas[slot.hourKey];
-                        } else {
-                            newMetas[slot.hourKey] = slot.isBreak ? 0 : 100;
-                        }
-                    });
-                    produtos[prodKey].metas = newMetas;
-                }
-                localStorage.setItem(STORAGE_KEYS.PRODUTOS, JSON.stringify(produtos));
-                renderProdutoMetaInputs();
-                showAlert("Horários de produção salvos com sucesso!", "success", "time-settings");
-            } else if (type === 'shift') {
-                shiftTimeSlots = slots;
-                localStorage.setItem(STORAGE_KEYS.SHIFT_TIMES, JSON.stringify(shiftTimeSlots));
-                showAlert("Horários de revezamento salvos com sucesso!", "success", "time-settings");
-            }
-
-            renderTimeSlots(type);
-            carregarDadosRevezamento(formatDate(selectedDateRevezamento));
-        }
-
-        function loadTimes(type) {
-            const stored = localStorage.getItem(type === 'production' ? STORAGE_KEYS.PRODUCTION_TIMES : STORAGE_KEYS.SHIFT_TIMES);
-            return stored ? JSON.parse(stored) : [];
-        }
-
-        function renderTimeSlots(type) {
-            const containerId = type === 'production' ? 'production-time-slots' : 'shift-time-slots';
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            const times = loadTimes(type);
-
-            times.forEach(slot => {
-                const div = document.createElement('div');
-                div.classList.add('time-slot');
-                div.setAttribute('draggable', true);
-                div.innerHTML = `
-                    <div>
-                        <label>Início:</label>
-                        <input type="time" class="time-start" value="${slot.start}">
-                    </div>
-                    <div>
-                        <label>Fim:</label>
-                        <input type="time" class="time-end" value="${slot.end}">
-                    </div>
-                    <div>
-                        <label>Rótulo:</label>
-                        <input type="text" class="time-label" placeholder="Ex: 17:00 - 18:00" value="${slot.label || ''}">
-                    </div>
-                    <div class="time-slot-checkbox">
-                        <label>
-                            <input type="checkbox" class="is-break-checkbox" ${slot.isBreak ? 'checked' : ''}> Descanso
-                        </label>
-                    </div>
-                    <button type="button" onclick="removeTimeSlot(this)">Remover</button>
-                `;
-                container.appendChild(div);
-                addDragListeners(div);
-            });
-        }
-
-        // Funções de Drag and Drop para Horários
-        function addDragListeners(element) {
-            element.addEventListener('dragstart', (e) => {
-                draggedItem = element;
-                originalParent = element.parentNode;
-                setTimeout(() => {
-                    element.classList.add('dragging');
-                }, 0);
-            });
-
-            element.addEventListener('dragend', () => {
-                draggedItem.classList.remove('dragging');
-                draggedItem = null;
-                originalParent = null;
-            });
-
-            element.parentNode.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                const afterElement = getDragAfterElement(element.parentNode, e.clientY);
-                const currentElement = draggedItem;
-                if (afterElement == null) {
-                    element.parentNode.appendChild(currentElement);
-                } else {
-                    element.parentNode.insertBefore(currentElement, afterElement);
-                }
-            });
-        }
-
-        function getDragAfterElement(container, y) {
-            const draggableElements = [...container.querySelectorAll('.time-slot:not(.dragging)')];
-
-            return draggableElements.reduce((closest, child) => {
-                const box = child.getBoundingClientRect();
-                const offset = y - box.top - box.height / 2;
-                if (offset < 0 && offset > closest.offset) {
-                    return { offset: offset, element: child };
-                } else {
-                    return closest;
-                }
-            }, { offset: -Infinity }).element;
-        }
-
-        // Funções de Importação/Exportação
-        function exportAllData() {
-            try {
-                const data = {
-                    postos: JSON.parse(localStorage.getItem(STORAGE_KEYS.POSTOS)),
-                    funcionarios: JSON.parse(localStorage.getItem(STORAGE_KEYS.FUNCIONARIOS)),
-                    produtos: JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUTOS)),
-                    productionData: JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTION_DATA)),
-                    revezamentoData: JSON.parse(localStorage.getItem(STORAGE_KEYS.REVEZAMENTO_DATA)),
-                    productionTimeSlots: JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTION_TIMES)),
-                    shiftTimeSlots: JSON.parse(localStorage.getItem(STORAGE_KEYS.SHIFT_TIMES)),
-                    shiftRotationConfig: JSON.parse(localStorage.getItem(STORAGE_KEYS.SHIFT_ROTATION_CONFIG))
-                };
-                const jsonData = JSON.stringify(data, null, 2);
-                const blob = new Blob([jsonData], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'producao_revezamento_data.json';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                showAlertIO("Dados exportados com sucesso!", "success");
-            } catch (e) {
-                console.error("Erro ao exportar dados:", e);
-                showAlertIO("Erro ao exportar dados. Verifique o console.", "error");
-            }
-        }
-
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) {
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-
-                    if (importedData.postos && importedData.funcionarios && importedData.productionData) {
-                        if (confirm('Importar dados substituirá todos os dados atuais. Deseja continuar?')) {
-                            localStorage.setItem(STORAGE_KEYS.POSTOS, JSON.stringify(importedData.postos));
-                            localStorage.setItem(STORAGE_KEYS.FUNCIONARIOS, JSON.stringify(importedData.funcionarios));
-                            localStorage.setItem(STORAGE_KEYS.PRODUTOS, JSON.stringify(importedData.produtos));
-                            localStorage.setItem(STORAGE_KEYS.PRODUCTION_DATA, JSON.stringify(importedData.productionData));
-                            localStorage.setItem(STORAGE_KEYS.REVEZAMENTO_DATA, JSON.stringify(importedData.revezamentoData));
-                            localStorage.setItem(STORAGE_KEYS.PRODUCTION_TIMES, JSON.stringify(importedData.productionTimeSlots));
-                            localStorage.setItem(STORAGE_KEYS.SHIFT_TIMES, JSON.stringify(importedData.shiftTimeSlots));
-                            localStorage.setItem(STORAGE_KEYS.SHIFT_ROTATION_CONFIG, JSON.stringify(importedData.shiftRotationConfig || {}));
-
-                            showAlertIO("Dados importados com sucesso! Recarregando a página...", "success");
-                            setTimeout(() => location.reload(), 1500);
-                        }
-                    } else {
-                        showAlertIO("Arquivo JSON inválido ou incompleto. Verifique o formato.", "error");
-                    }
-                } catch (error) {
-                    console.error("Erro ao ler ou parsear o arquivo JSON:", error);
-                    showAlertIO("Erro ao importar dados. O arquivo não é um JSON válido.", "error");
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        // Funções de PDF
-        function gerarPdfProducao() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            const selectedDate = document.getElementById('selected-date-production').textContent;
-            const savedDataForDate = productionData[selectedDate];
-            const selectedProduct = savedDataForDate ? savedDataForDate.selectedProduct : '';
-
-
-            doc.setFontSize(16);
-            doc.text(`Relatório de Produção - ${selectedDate}`, 14, 20);
-
-            let currentY = 30;
-
-            // Incluir produto selecionado, se houver
-            if (selectedProduct) {
-                doc.setFontSize(12);
-                doc.text(`Produto Selecionado: ${selectedProduct}`, 14, currentY);
-                currentY += 10;
-            } else {
-                doc.setFontSize(12);
-                doc.text(`Nenhum produto selecionado`, 14, currentY);
-                currentY += 10;
-            }
-
-
-            const table = document.getElementById('production-table');
-            const data = [];
-            const headers = [];
-
-            // Headers
-            Array.from(table.querySelector('thead tr').children).forEach(th => {
-                headers.push(th.textContent);
-            });
-
-            // Body
-            Array.from(table.querySelector('tbody').children).forEach(row => {
-                const rowData = [];
-                Array.from(row.children).forEach(cell => {
-                    const input = cell.querySelector('input');
-                    if (input) {
-                        rowData.push(input.value);
-                    } else {
-                        rowData.push(cell.textContent);
-                    }
-                });
-                data.push(rowData);
-            });
-
-            // Footer (Totais)
-            const totalProduzido = document.getElementById('total-produzido').textContent;
-            const totalDiferenca = document.getElementById('total-diferenca').textContent;
-            data.push(['Total Geral do Turno', '', totalProduzido, totalDiferenca]);
-
-            doc.autoTable({
-                head: [headers],
-                body: data,
-                startY: currentY + 5, // Ajusta a posição inicial da tabela
-                theme: 'grid',
-                styles: {
-                    fontSize: 10,
-                    cellPadding: 3,
-                    halign: 'center',
-                    valign: 'middle'
-                },
-                headStyles: {
-                    fillColor: [242, 242, 242],
-                    textColor: [0, 0, 0],
-                    fontStyle: 'bold'
-                },
-                columnStyles: {
-                    0: { halign: 'left' }
-                }
-            });
-
-            // Observações
-            const observacaoText = document.getElementById('observacao').value;
-            const isCritica = document.getElementById('obs-critica-checkbox').checked;
-            if (observacaoText) {
-                const finalY = doc.autoTable.previous.finalY + 10;
-                doc.setFontSize(12);
-                doc.text('Observações:', 14, finalY);
-                doc.setFontSize(10);
-                doc.setTextColor(isCritica ? 211 : 255, isCritica ? 47 : 152, isCritica ? 47 : 0);
-                doc.text(observacaoText, 14, finalY + 7, { maxWidth: 180 });
-            }
-
-            doc.save(`relatorio_producao_${selectedDate.replace(/\//g, '-')}.pdf`);
-        }
-
-        function gerarPdfRevezamento() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            const selectedDate = document.getElementById('selected-date-revezamento').textContent;
-            doc.setFontSize(16);
-            doc.text(`Relatório de Revezamento - ${selectedDate}`, 14, 20);
-
-            const table = document.getElementById('shift-table');
-            const data = [];
-            const headers = [];
-
-            // Headers
-            Array.from(table.querySelector('thead tr').children).forEach(th => {
-                headers.push(th.textContent);
-            });
-
-            // Body
-            Array.from(table.querySelector('tbody').children).forEach(row => {
-                const rowData = [];
-                Array.from(row.children).forEach(cell => {
-                    const select = cell.querySelector('select');
-                    if (select) {
-                        // Se for um select, pegue o valor selecionado
-                        rowData.push(select.value);
-                    } else {
-                        // Caso contrário, pegue o texto da célula (para "Posto de Trabalho" ou "Descanso")
-                        rowData.push(cell.textContent);
-                    }
-                });
-                data.push(rowData);
-            });
-
-            doc.autoTable({
-                head: [headers],
-                body: data,
-                startY: 30,
-                theme: 'grid',
-                styles: {
-                    fontSize: 10,
-                    cellPadding: 3,
-                    halign: 'center',
-                    valign: 'middle'
-                },
-                headStyles: {
-                    fillColor: [242, 242, 242],
-                    textColor: [0, 0, 0],
-                    fontStyle: 'bold'
-                },
-                columnStyles: {
-                    0: { halign: 'left' }
-                }
-            });
-
-            doc.save(`relatorio_revezamento_${selectedDate.replace(/\//g, '-')}.pdf`);
-        }
-
-        // --- FUNÇÕES PARA REVEZAMENTO AUTOMÁTICO POR POSTO ---
-
-        function loadShiftRotationConfig() {
-            const stored = localStorage.getItem(STORAGE_KEYS.SHIFT_ROTATION_CONFIG);
-            shiftRotationConfig = stored ? JSON.parse(stored) : {};
-
-            postos.forEach(posto => {
-                if (!(posto in shiftRotationConfig)) {
-                    shiftRotationConfig[posto] = posto;
-                }
-            });
-            for (const key in shiftRotationConfig) {
-                if (!postos.includes(key)) {
-                    delete shiftRotationConfig[key];
-                }
-            }
-            localStorage.setItem(STORAGE_KEYS.SHIFT_ROTATION_CONFIG, JSON.stringify(shiftRotationConfig));
-            return shiftRotationConfig;
-        }
-
-        function renderShiftRotationConfigUI() {
-            const container = document.getElementById('posto-rotation-config-list');
-            if (!container) return;
-            container.innerHTML = '';
-
-            loadShiftRotationConfig();
-
-            postos.forEach(postoOrigem => {
-                const div = document.createElement('div');
-                div.classList.add('posto-rotation-item');
-
-                const label = document.createElement('label');
-                label.textContent = `${postoOrigem} vai para:`;
-                label.setAttribute('for', `rotation-select-${postoOrigem}`);
-
-                const select = document.createElement('select');
-                select.id = `rotation-select-${postoOrigem}`;
-                select.dataset.postoOrigem = postoOrigem;
-
-                const defaultOption = document.createElement('option');
-                defaultOption.value = postoOrigem;
-                defaultOption.textContent = `${postoOrigem} (permanece)`;
-                select.appendChild(defaultOption);
-
-                postos.forEach(postoDestino => {
-                    if (postoDestino !== postoOrigem) {
-                        const option = document.createElement('option');
-                        option.value = postoDestino;
-                        option.textContent = postoDestino;
-                        select.appendChild(option);
-                    }
-                });
-
-                if (shiftRotationConfig[postoOrigem]) {
-                    select.value = shiftRotationConfig[postoOrigem];
-                } else {
-                    select.value = postoOrigem;
-                }
-
-                div.appendChild(label);
-                div.appendChild(select);
-                container.appendChild(div);
-            });
-        }
-
-        function saveShiftRotationConfig() {
-            const selects = document.querySelectorAll('#posto-rotation-config-list select');
-            const newConfig = {};
-            selects.forEach(select => {
-                const postoOrigem = select.dataset.postoOrigem;
-                const postoDestino = select.value;
-                newConfig[postoOrigem] = postoDestino;
-            });
-            shiftRotationConfig = newConfig;
-            localStorage.setItem(STORAGE_KEYS.SHIFT_ROTATION_CONFIG, JSON.stringify(shiftRotationConfig));
-            showAlert("Configuração de revezamento salva com sucesso!", "success", "alert-shift-rotation-config");
-        }
-
-        function gerarRevezamentoAutomatico(configuracaoPrimeiroTurno) {
-            const escalaCompleta = {};
-            const currentShiftTimes = loadTimes('shift');
-            const rotationConfig = loadShiftRotationConfig();
-
-            const activeShifts = currentShiftTimes.filter(t => !t.isBreak);
-            if (activeShifts.length === 0) {
-                console.warn("Nenhum turno de revezamento ativo encontrado para gerar escala automática.");
-                return {};
-            }
-
-            let funcionarioParaPostoInicial = {};
-            for (const posto in configuracaoPrimeiroTurno) {
-                const funcionario = configuracaoPrimeiroTurno[posto];
-                if (funcionario) {
-                    funcionarioParaPostoInicial[funcionario] = posto;
-                }
-            }
-
-            let currentTurnAssignments = { ...configuracaoPrimeiroTurno };
-            escalaCompleta[activeShifts[0].label] = { ...currentTurnAssignments };
-
-            for (let i = 1; i < currentShiftTimes.length; i++) {
-                const proximoTurnoConfig = currentShiftTimes[i];
-                const proximoTurnoLabel = proximoTurnoConfig.label;
-
-                if (proximoTurnoConfig.isBreak) {
-                    escalaCompleta[proximoTurnoLabel] = postos.reduce((acc, posto) => {
-                        acc[posto] = 'Descanso';
-                        return acc;
-                    }, {});
-                } else {
-                    const nextTurnAssignments = {};
-                    const assignedEmployeesInNextTurn = new Set();
-
-                    const futureAssignmentsMapping = {};
-
-                    for (const postoOrigem of postos) {
-                        const funcionarioNoPostoOrigem = currentTurnAssignments[postoOrigem];
-                        if (funcionarioNoPostoOrigem) {
-                            const postoDestino = rotationConfig[postoOrigem] || postoOrigem;
-                            futureAssignmentsMapping[funcionarioNoPostoOrigem] = postoDestino;
-                        }
-                    }
-
-                    postos.forEach(postoFinal => {
-                        const funcionarioPrevisto = Object.keys(futureAssignmentsMapping).find(func => futureAssignmentsMapping[func] === postoFinal);
-
-                        if (funcionarioPrevisto && !assignedEmployeesInNextTurn.has(funcionarioPrevisto)) {
-                            nextTurnAssignments[postoFinal] = funcionarioPrevisto;
-                            assignedEmployeesInNextTurn.add(funcionarioPrevisto);
-                        } else {
-                            nextTurnAssignments[postoFinal] = '';
-                        }
-                    });
-
-                    const allCurrentEmployees = Object.values(currentTurnAssignments).filter(f => f !== 'Descanso' && f !== '');
-                    const allNextAssignedEmployees = Object.values(nextTurnAssignments).filter(f => f !== 'Descanso' && f !== '');
-
-                    const unassignedEmployees = allCurrentEmployees.filter(emp => !allNextAssignedEmployees.includes(emp));
-                    const emptyPostos = postos.filter(posto => !Object.keys(nextTurnAssignments).includes(posto) || nextTurnAssignments[posto] === '');
-
-                    unassignedEmployees.forEach(emp => {
-                        if (emptyPostos.length > 0) {
-                            const postoToFill = emptyPostos.shift();
-                            nextTurnAssignments[postoToFill] = emp;
-                        }
-                    });
-
-                    currentTurnAssignments = nextTurnAssignments;
-                    escalaCompleta[proximoTurnoLabel] = { ...currentTurnAssignments };
-                }
-            }
-            return escalaCompleta;
-        }
-
-        function gerarRevezamentoAutomacoUI() {
-            const currentShiftTimes = loadTimes('shift');
-            const primeiroTurnoAtivo = currentShiftTimes.find(t => !t.isBreak);
-
-            if (!primeiroTurnoAtivo) {
-                showAlert("Nenhum turno de revezamento ativo configurado. Configure os horários de revezamento primeiro.", "error", "revezamento");
-                return;
-            }
-
-            const shiftTableBody = document.querySelector('#shift-table tbody');
-            const primeiroTurnoSelects = shiftTableBody.querySelectorAll(`select[data-turno="${primeiroTurnoAtivo.label}"]`);
-
-            const configuracaoPrimeiroTurno = {};
-            let allAssigned = true;
-
-            postos.forEach(posto => {
-                const selectForPosto = Array.from(primeiroTurnoSelects).find(s => s.dataset.posto === posto);
-                if (selectForPosto) {
-                    const funcionario = selectForPosto.value;
-                    configuracaoPrimeiroTurno[posto] = funcionario;
-                    if (!funcionario) {
-                        allAssigned = false;
-                    }
-                } else {
-                    configuracaoPrimeiroTurno[posto] = '';
-                    allAssigned = false;
-                }
-            });
-
-            if (!allAssigned) {
-                showAlert("Por favor, preencha todos os funcionários para o primeiro turno ativo antes de gerar automaticamente.", "error", "revezamento");
-                return;
-            }
-
-            const dataAtual = formatDate(selectedDateRevezamento);
-            const escalaGerada = gerarRevezamentoAutomatico(configuracaoPrimeiroTurno);
-
-            const formattedRevezamentoData = {};
-            for (const turnoLabel in escalaGerada) {
-                const atribuicoesDoTurno = escalaGerada[turnoLabel];
-                for (const postoNome in atribuicoesDoTurno) {
-                    if (!formattedRevezamentoData[postoNome]) {
-                        formattedRevezamentoData[postoNome] = {};
-                    }
-                    formattedRevezamentoData[postoNome][turnoLabel] = atribuicoesDoTurno[postoNome];
-                }
-            }
-
-            revezamentoData[dataAtual] = formattedRevezamentoData;
-            localStorage.setItem(STORAGE_KEYS.REVEZAMENTO_DATA, JSON.stringify(revezamentoData));
-
-            carregarDadosRevezamento(dataAtual);
-            showAlert("Revezamento automático gerado e salvo com sucesso!", "success", "revezamento");
-        }
-
-        // --- Login Simples ---
-        const SECRET_PASSWORD = "90905"; // !!! MUDE ESTA SENHA PARA UMA DE SUA ESCOLHA !!!
-        const IS_LOGGED_IN_KEY = "isLoggedIn";
-
+        // Variáveis globais
+        let transactions = [];
+        let paidTransactions = [];
+        let categories = ["Alimentação", "Moradia", "Transporte", "Lazer", "Saúde", "Educação", "Salário", "Outros"]; // Categorias padrão
+        let chart = null;
+        let categoryChart = null;
+        const PASSWORD = "123456"; // Senha padrão - você pode alterar
+
+        // Variáveis do Calendário
+        let currentCalendarDate = new Date(); // Data atual para o calendário
+
+        // Elementos do DOM
+        const loginContainer = document.getElementById('login-container');
+        const appContainer = document.getElementById('app-container');
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const loginPassword = document.getElementById('login-password');
+        const loginMessage = document.getElementById('login-message');
+        const categorySelect = document.getElementById('category');
+        const editCategorySelect = document.getElementById('edit-category');
+        const newCategoryNameInput = document.getElementById('newCategoryName');
+        const addCategoryBtn = document.getElementById('addCategoryBtn');
+        const categoryListDiv = document.getElementById('categoryList');
+
+        // Elementos do Calendário
+        const currentMonthYear = document.getElementById('currentMonthYear');
+        const calendarBody = document.getElementById('calendar-body');
+        const prevMonthBtn = document.getElementById('prevMonth');
+        const nextMonthBtn = document.getElementById('nextMonth');
+
+        // Elementos do Modal de Detalhes da Conta
+        const billDetailsModal = document.getElementById('billDetailsModal');
+        const billDetailsTitle = document.getElementById('billDetailsTitle');
+        const billDetailsList = document.getElementById('billDetailsList');
+        const noBillsMessage = document.getElementById('noBillsMessage');
+
+
+        // Verificar se há dados salvos ao carregar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLogin();
+            document.getElementById('date').valueAsDate = new Date();
+        });
+
+        // Sistema de Login
         function checkLogin() {
-            const isLoggedIn = sessionStorage.getItem(IS_LOGGED_IN_KEY) === 'true';
-            const loginScreen = document.getElementById('login-screen');
-
-            if (isLoggedIn) {
-                if (loginScreen) {
-                    loginScreen.style.display = 'none';
-                }
-                return true;
+            const loggedIn = localStorage.getItem('loggedIn') === 'true';
+            if (loggedIn) {
+                loginContainer.style.display = 'none';
+                appContainer.style.display = 'block';
+                loadData();
+                populateCategorySelects(); // Popula categorias após carregar dados
+                renderCategoryList(); // Renderiza a lista de categorias
+                renderCalendar(); // Renderiza o calendário ao logar
             } else {
-                if (loginScreen) {
-                    loginScreen.style.display = 'flex';
-                }
-                return false;
+                loginContainer.style.display = 'block';
+                appContainer.style.display = 'none';
             }
         }
 
-        function handleLogin() {
-            const passwordInput = document.getElementById('password-input');
-            const loginAlert = document.getElementById('login-alert');
-            const enteredPassword = passwordInput.value;
-
-            if (enteredPassword === SECRET_PASSWORD) {
-                sessionStorage.setItem(IS_LOGGED_IN_KEY, 'true');
-                document.getElementById('login-screen').style.display = 'none';
-                showAlert("Login realizado com sucesso!", "success", "production"); // Exibe alerta na aba de produção
-                // Redireciona para o painel de produção após o login
-                openPanel('production'); // Garante que a tela principal seja exibida
+        loginBtn.addEventListener('click', function() {
+            if (loginPassword.value === PASSWORD) {
+                localStorage.setItem('loggedIn', 'true');
+                loginMessage.textContent = '';
+                checkLogin();
             } else {
-                loginAlert.textContent = "Senha incorreta. Tente novamente.";
-                loginAlert.style.display = 'block';
-                passwordInput.value = ''; // Limpa o campo da senha
-                setTimeout(() => {
-                    loginAlert.style.display = 'none';
-                }, 3000);
-            }
-        }
-
-        // Inicialização da aplicação
-        document.addEventListener('DOMContentLoaded', () => {
-            // Primeiro, verifique o estado do login
-            if (!checkLogin()) {
-                // Se não estiver logado, adicione listeners à tela de login
-                const loginButton = document.getElementById('login-button');
-                const passwordInput = document.getElementById('password-input');
-
-                if (loginButton) {
-                    loginButton.addEventListener('click', handleLogin);
-                }
-                if (passwordInput) {
-                    passwordInput.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter') {
-                            handleLogin();
-                        }
-                    });
-                    passwordInput.focus(); // Coloca o foco no campo da senha
-                }
-            } else {
-                // Se já estiver logado, inicialize a aplicação normalmente
-                try {
-                    initializeData();
-                    loadPostos();
-                    loadFuncionarios();
-                    loadProdutos();
-                    loadShiftRotationConfig();
-
-                    // Carrega dados de produção e revezamento do localStorage
-                    productionData = JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTION_DATA)) || {};
-                    revezamentoData = JSON.parse(localStorage.getItem(STORAGE_KEYS.REVEZAMENTO_DATA)) || {};
-
-                    document.getElementById('selected-date-production').textContent = formatDate(selectedDateProduction);
-                    document.getElementById('selected-date-revezamento').textContent = formatDate(selectedDateRevezamento);
-
-                    carregarDadosProducao(formatDate(selectedDateProduction));
-                    carregarDadosRevezamento(formatDate(selectedDateRevezamento));
-
-                    renderCalendar('production');
-                    renderCalendar('revezamento');
-
-                    const postoForm = document.getElementById('posto-form');
-                    if (postoForm) postoForm.addEventListener('submit', addPosto);
-                    const funcionarioForm = document.getElementById('funcionario-form');
-                    if (funcionarioForm) funcionarioForm.addEventListener('submit', addFuncionario);
-                    const produtoForm = document.getElementById('produto-form');
-                    if (produtoForm) produtoForm.addEventListener('submit', addProduto);
-
-                    const shiftTable = document.getElementById('shift-table');
-                    if (shiftTable) shiftTable.addEventListener('change', handleShiftSelectChange);
-
-                    const importFileInput = document.getElementById('importFileInput');
-                    if (importFileInput) {
-                        importFileInput.addEventListener('change', importData);
-                    }
-
-                    // Ajuste inicial para o botão de remover produto, se houver apenas um
-                    const firstRemoveBtn = document.querySelector('.product-select-group[data-product-index="0"] .remove-product-btn');
-                    if (document.querySelectorAll('.product-select-group').length === 1 && firstRemoveBtn) {
-                        firstRemoveBtn.style.display = 'none';
-                    }
-
-                    openPanel('production'); // Garante que a tela de produção seja a primeira após o login
-                    console.log("Aplicação inicializada com sucesso!");
-                } catch (e) {
-                    console.error("Erro fatal durante a inicialização da aplicação (DOMContentLoaded):", e);
-                    showAlert("Um erro crítico impediu o carregamento da aplicação. Verifique o console para mais detalhes.", "error", "production", 10000);
-                }
+                loginMessage.textContent = 'Senha incorreta!';
             }
         });
+
+        logoutBtn.addEventListener('click', function() {
+            localStorage.removeItem('loggedIn');
+            checkLogin();
+            loginPassword.value = '';
+            loginMessage.textContent = '';
+        });
+
+        // Carregar dados
+        function loadData() {
+            transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+            paidTransactions = JSON.parse(localStorage.getItem('paidTransactions')) || [];
+            categories = JSON.parse(localStorage.getItem('categories')) || ["Alimentação", "Moradia", "Transporte", "Lazer", "Saúde", "Educação", "Salário", "Outros"];
+            updateTransactions();
+            updateBalance();
+            renderCharts();
+            renderCalendar(); // Renderiza o calendário após carregar dados
+        }
+
+        // Salvar dados
+        function saveData() {
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            localStorage.setItem('paidTransactions', JSON.stringify(paidTransactions));
+            localStorage.setItem('categories', JSON.stringify(categories)); // Salvar categorias
+            updateTransactions();
+            updateBalance();
+            renderCharts();
+            renderCalendar(); // Renderiza o calendário após salvar dados
+        }
+
+        // Gerenciar Categorias
+        function loadCategories() {
+            categories = JSON.parse(localStorage.getItem('categories')) || ["Alimentação", "Moradia", "Transporte", "Lazer", "Saúde", "Educação", "Salário", "Outros"];
+        }
+
+        function saveCategories() {
+            localStorage.setItem('categories', JSON.stringify(categories));
+            populateCategorySelects();
+            renderCategoryList();
+        }
+
+        function populateCategorySelects() {
+            categorySelect.innerHTML = '<option value="">Selecione...</option>';
+            editCategorySelect.innerHTML = '<option value="">Selecione...</option>';
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                categorySelect.appendChild(option);
+
+                const editOption = document.createElement('option');
+                editOption.value = cat;
+                editOption.textContent = cat;
+                editCategorySelect.appendChild(editOption);
+            });
+        }
+
+        addCategoryBtn.addEventListener('click', function() {
+            const newCategory = newCategoryNameInput.value.trim();
+            if (newCategory && !categories.includes(newCategory)) {
+                categories.push(newCategory);
+                saveCategories();
+                newCategoryNameInput.value = '';
+            } else if (newCategory) {
+                alert('Esta categoria já existe!');
+            }
+        });
+
+        function deleteCategory(categoryToDelete) {
+            if (confirm(`Tem certeza que deseja excluir a categoria "${categoryToDelete}"? Todas as transações associadas a ela ficarão sem categoria definida.`)) {
+                categories = categories.filter(cat => cat !== categoryToDelete);
+                
+                // Remover categoria de transações existentes
+                transactions.forEach(t => {
+                    if (t.category === categoryToDelete) {
+                        t.category = ''; // Limpa a categoria
+                    }
+                });
+                paidTransactions.forEach(t => {
+                    if (t.category === categoryToDelete) {
+                        t.category = ''; // Limpa a categoria
+                    }
+                });
+
+                saveData(); // Salva as transações e as categorias
+                saveCategories(); // Atualiza os selects e a lista
+            }
+        }
+
+        function renderCategoryList() {
+            categoryListDiv.innerHTML = '';
+            if (categories.length === 0) {
+                categoryListDiv.innerHTML = '<p>Nenhuma categoria cadastrada ainda.</p>';
+                return;
+            }
+            categories.forEach(cat => {
+                const categoryItem = document.createElement('div');
+                categoryItem.className = 'category-item';
+                categoryItem.innerHTML = `
+                    <span>${cat}</span>
+                    <button class="delete-btn" onclick="deleteCategory('${cat}')">❌</button>
+                `;
+                categoryListDiv.appendChild(categoryItem);
+            });
+        }
+
+        // Formulário de transação
+        document.getElementById('transactionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const transaction = {
+                id: Date.now(),
+                type: document.getElementById('type').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                description: document.getElementById('description').value,
+                category: document.getElementById('category').value,
+                date: document.getElementById('date').value,
+                frequency: document.getElementById('frequency').value, // Nova propriedade
+                paid: false
+            };
+            transactions.push(transaction);
+            saveData();
+            this.reset();
+            document.getElementById('date').valueAsDate = new Date();
+        });
+
+        // Exportar dados
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            const data = {
+                transactions: transactions,
+                paidTransactions: paidTransactions,
+                categories: categories // Incluir categorias no export
+            };
+            const dataStr = JSON.stringify(data);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `backup_financas_${new Date().toLocaleDateString('pt-BR')}.json`;
+            a.click();
+        });
+
+        // Importar dados
+        document.getElementById('importBtn').addEventListener('click', function() {
+            document.getElementById('fileInput').click();
+        });
+
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const imported = JSON.parse(e.target.result);
+                        if (confirm(`Importar ${imported.transactions.length || 0} transações pendentes, ${imported.paidTransactions.length || 0} pagas e ${imported.categories.length || 0} categorias?\n(Isso substituirá seus dados atuais)`)) {
+                            transactions = imported.transactions || [];
+                            paidTransactions = imported.paidTransactions || [];
+                            categories = imported.categories || ["Alimentação", "Moradia", "Transporte", "Lazer", "Saúde", "Educação", "Salário", "Outros"];
+                            saveData();
+                            populateCategorySelects(); // Atualiza selects após importar
+                            renderCategoryList(); // Atualiza lista de categorias
+                            alert('Dados importados com sucesso!'); // Feedback de sucesso
+                        }
+                    } catch (error) {
+                        alert('Erro ao importar arquivo. Verifique se o arquivo é um JSON válido e não foi modificado.');
+                        console.error('Erro na importação:', error); // Log detalhado para depuração
+                    } finally {
+                        // Limpa o input de arquivo para permitir a mesma seleção novamente
+                        e.target.value = ''; 
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // Atualizar listas de transações
+        function updateTransactions() {
+            const tbody = document.getElementById('transactionsBody');
+            tbody.innerHTML = '';
+            
+            transactions
+                .filter(t => !t.paid)
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .forEach(t => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="${t.type}">${t.type === 'income' ? '⬆️' : '⬇️'} ${t.type === 'income' ? 'Entrada' : 'Saída'}</td>
+                        <td class="${t.type}">R$ ${t.amount.toFixed(2)}</td>
+                        <td>${t.description}</td>
+                        <td>${t.category || '-'}</td>
+                        <td>${new Date(t.date).toLocaleDateString()}</td>
+                        <td>${t.frequency === 'monthly' ? 'Mensal' : 'Única'}</td>
+                        <td style="white-space: nowrap;">
+                            <button class="edit-btn" onclick="editTransaction(${t.id})" style="padding: 5px; margin-right: 5px;">✏️</button>
+                            ${t.type === 'expense' ? `<button class="pay-btn" onclick="markAsPaid(${t.id})" style="padding: 5px; margin-right: 5px;">✔️</button>` : ''}
+                            <button class="delete-btn" onclick="deleteTransaction(${t.id})" style="padding: 5px;">❌</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+            const paidTbody = document.getElementById('paidTransactionsBody');
+            paidTbody.innerHTML = '';
+            
+            paidTransactions
+                .sort((a, b) => new Date(b.paidDate) - new Date(a.paidDate))
+                .forEach(t => {
+                    const row = document.createElement('tr');
+                    row.className = 'paid';
+                    row.innerHTML = `
+                        <td class="${t.type}">${t.type === 'income' ? '⬆️' : '⬇️'} ${t.type === 'income' ? 'Entrada' : 'Saída'}</td>
+                        <td class="${t.type}">R$ ${t.amount.toFixed(2)}</td>
+                        <td>${t.description}</td>
+                        <td>${t.category || '-'}</td>
+                        <td>${new Date(t.date).toLocaleDateString()}</td>
+                        <td>${new Date(t.paidDate).toLocaleDateString()}</td>
+                    `;
+                    paidTbody.appendChild(row);
+                });
+        }
+
+        // Atualizar saldo
+        function updateBalance() {
+            const income = transactions
+                .filter(t => !t.paid && t.type === 'income')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const expense = transactions
+                .filter(t => !t.paid && t.type === 'expense')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const balance = income - expense;
+            
+            const balanceElement = document.getElementById('totalBalance');
+            balanceElement.textContent = `R$ ${balance.toFixed(2)}`;
+            balanceElement.className = balance >= 0 ? 'positive' : 'negative';
+        }
+
+        // Renderizar gráficos
+        function renderCharts() {
+            renderTransactionsChart();
+            renderCategoryChart();
+        }
+
+        function renderTransactionsChart() {
+            const ctx = document.getElementById('transactionsChart').getContext('2d');
+            
+            // Agrupar por mês
+            const monthlyData = {};
+            
+            // Incluir transações pendentes e pagas no cálculo do gráfico
+            [...transactions, ...paidTransactions].forEach(t => {
+                const date = new Date(t.date);
+                const monthYear = `${date.getMonth()+1}/${date.getFullYear()}`;
+                
+                if (!monthlyData[monthYear]) {
+                    monthlyData[monthYear] = { income: 0, expense: 0 };
+                }
+                
+                if (t.type === 'income') {
+                    monthlyData[monthYear].income += t.amount;
+                } else {
+                    monthlyData[monthYear].expense += t.amount;
+                }
+            });
+            
+            const labels = Object.keys(monthlyData).sort((a, b) => {
+                const [monthA, yearA] = a.split('/').map(Number);
+                const [monthB, yearB] = b.split('/').map(Number);
+                return yearA - yearB || monthA - monthB;
+            });
+            
+            if (chart) chart.destroy();
+            
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Entradas',
+                            data: labels.map(l => monthlyData[l].income),
+                            backgroundColor: '#2ecc71'
+                        },
+                        {
+                            label: 'Saídas',
+                            data: labels.map(l => monthlyData[l].expense),
+                            backgroundColor: '#e74c3c'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function renderCategoryChart() {
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            
+            // Agrupar por categoria apenas despesas
+            const categoryData = {};
+            
+            // Incluir todas as despesas, sejam elas pendentes ou pagas
+            [...transactions.filter(t => t.type === 'expense'), ...paidTransactions.filter(t => t.type === 'expense')].forEach(t => {
+                const category = t.category || 'Outros';
+                categoryData[category] = (categoryData[category] || 0) + t.amount;
+            });
+            
+            const labels = Object.keys(categoryData);
+            const data = labels.map(l => categoryData[l]);
+            
+            if (categoryChart) categoryChart.destroy();
+            
+            categoryChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#3498db', '#e74c3c', '#2ecc71', '#f39c12', 
+                            '#9b59b6', '#1abc9c', '#d35400', '#34495e',
+                            '#95a5a6', '#f1c40f', '#ecf0f1', '#7f8c8d' // Mais cores
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+
+        // Funções de ação
+        function deleteTransaction(id) {
+            if (confirm('Excluir esta transação permanentemente?')) {
+                transactions = transactions.filter(t => t.id !== id);
+                paidTransactions = paidTransactions.filter(t => t.id !== id);
+                saveData();
+            }
+        }
+
+        function markAsPaid(id) {
+            const transactionIndex = transactions.findIndex(t => t.id === id);
+            if (transactionIndex !== -1) {
+                const transaction = transactions[transactionIndex];
+                
+                // Se for mensal, remove da lista de pendentes e cria uma nova para o próximo mês
+                if (transaction.frequency === 'monthly') {
+                    // Marca a transação atual como paga e move para paidTransactions
+                    transaction.paid = true;
+                    transaction.paidDate = new Date().toISOString().split('T')[0];
+                    paidTransactions.push(transaction);
+
+                    // Cria uma nova transação para o próximo mês
+                    const nextMonthDate = new Date(transaction.date);
+                    nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
+
+                    const newTransaction = {
+                        ...transaction,
+                        id: Date.now(), // Novo ID para a nova transação
+                        date: nextMonthDate.toISOString().split('T')[0],
+                        paid: false,
+                        paidDate: null
+                    };
+                    transactions.splice(transactionIndex, 1); // Remove a transação original
+                    transactions.push(newTransaction); // Adiciona a nova transação
+                } else {
+                    // Transação única: marca como paga e move
+                    transaction.paid = true;
+                    transaction.paidDate = new Date().toISOString().split('T')[0];
+                    paidTransactions.push(transaction);
+                    transactions.splice(transactionIndex, 1);
+                }
+                saveData();
+            }
+        }
+
+        function editTransaction(id) {
+            const transaction = transactions.find(t => t.id === id) || paidTransactions.find(t => t.id === id);
+            if (transaction) {
+                document.getElementById('edit-id').value = transaction.id;
+                document.getElementById('edit-type').value = transaction.type;
+                document.getElementById('edit-amount').value = transaction.amount;
+                document.getElementById('edit-description').value = transaction.description;
+                // Popula o select de categoria antes de definir o valor
+                populateCategorySelects(); 
+                document.getElementById('edit-category').value = transaction.category || '';
+                document.getElementById('edit-date').value = transaction.date;
+                document.getElementById('edit-frequency').value = transaction.frequency || 'unique'; // Define a frequência
+                document.getElementById('editModal').style.display = 'flex';
+            }
+        }
+
+        // Modal de edição
+        document.getElementById('editForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('edit-id').value);
+            let transactionToUpdate = null;
+            let isPaidTransaction = false;
+
+            let transactionIndex = transactions.findIndex(t => t.id === id);
+            if (transactionIndex !== -1) {
+                transactionToUpdate = transactions[transactionIndex];
+            } else {
+                transactionIndex = paidTransactions.findIndex(t => t.id === id);
+                if (transactionIndex !== -1) {
+                    transactionToUpdate = paidTransactions[transactionIndex];
+                    isPaidTransaction = true;
+                }
+            }
+            
+            if (transactionToUpdate) {
+                transactionToUpdate.type = document.getElementById('edit-type').value;
+                transactionToUpdate.amount = parseFloat(document.getElementById('edit-amount').value);
+                transactionToUpdate.description = document.getElementById('edit-description').value;
+                transactionToUpdate.category = document.getElementById('edit-category').value;
+                transactionToUpdate.date = document.getElementById('edit-date').value;
+                transactionToUpdate.frequency = document.getElementById('edit-frequency').value; // Atualiza a frequência
+                
+                saveData();
+                document.getElementById('editModal').style.display = 'none';
+            }
+        });
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        // Tabs
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                
+                // Ativar botão
+                document.querySelectorAll('.tab-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // Mostrar conteúdo
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(tabId).classList.add('active');
+
+                // Renderizar a lista de categorias quando a aba de categorias for ativada
+                if (tabId === 'categories') {
+                    renderCategoryList();
+                }
+                // Renderizar o calendário se a aba de relatórios for ativada
+                if (tabId === 'reports') {
+                    renderCalendar();
+                }
+            });
+        });
+
+        // Funções do Calendário
+        function renderCalendar() {
+            calendarBody.innerHTML = ''; // Limpa o calendário existente
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth(); // 0-11
+            
+            // Define o texto do cabeçalho do calendário (ex: Julho 2024)
+            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                                "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            currentMonthYear.textContent = `${monthNames[month]} ${year}`;
+
+            // Encontra o primeiro dia do mês (0 = Domingo, 1 = Segunda...)
+            const firstDayOfMonth = new Date(year, month, 1).getDay();
+            // Encontra o último dia do mês
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            let date = 1;
+            // Loop para criar as semanas (linhas da tabela)
+            for (let i = 0; i < 6; i++) { // 6 semanas para garantir que todos os dias caibam
+                const row = document.createElement('tr');
+
+                // Loop para criar os dias da semana (células da tabela)
+                for (let j = 0; j < 7; j++) {
+                    const cell = document.createElement('td');
+                    let cellDate = null;
+
+                    if (i === 0 && j < firstDayOfMonth) {
+                        // Dias do mês anterior
+                        cell.classList.add('other-month');
+                        // cell.textContent = ''; // Deixa vazio ou mostra dias do mês anterior
+                    } else if (date > daysInMonth) {
+                        // Dias do próximo mês
+                        cell.classList.add('other-month');
+                        // cell.textContent = ''; // Deixa vazio ou mostra dias do próximo mês
+                        date++;
+                    } else {
+                        // Dias do mês atual
+                        cell.textContent = date;
+                        cell.classList.add('current-month');
+                        cellDate = new Date(year, month, date);
+
+                        // Adiciona o evento de clique para mostrar detalhes das contas
+                        cell.onclick = () => showBillsForDay(cellDate);
+
+                        // Verifica se é o dia de hoje
+                        const today = new Date();
+                        if (cellDate.toDateString() === today.toDateString()) {
+                            cell.classList.add('today');
+                        }
+
+                        // Verifica se há contas a pagar neste dia
+                        const billsOnThisDay = getBillsForDate(cellDate);
+                        if (billsOnThisDay.length > 0) {
+                            cell.classList.add('has-bill');
+                            // Adiciona um indicador visual
+                            const indicator = document.createElement('div');
+                            indicator.className = 'bill-indicator';
+                            indicator.textContent = `(${billsOnThisDay.length} conta${billsOnThisDay.length > 1 ? 's' : ''})`;
+                            cell.appendChild(indicator);
+                        }
+                        date++;
+                    }
+                    row.appendChild(cell);
+                }
+                calendarBody.appendChild(row);
+                if (date > daysInMonth && i > 3) break; // Para de adicionar linhas se já passou do último dia
+            }
+        }
+
+        // Função para obter contas para uma data específica
+        function getBillsForDate(targetDate) {
+            const formattedTargetDate = targetDate.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+            
+            // Filtra despesas pendentes e despesas pagas para o dia
+            const allExpensesForDay = [
+                ...transactions.filter(t => t.type === 'expense' && !t.paid && t.date === formattedTargetDate),
+                ...paidTransactions.filter(t => t.type === 'expense' && t.date === formattedTargetDate)
+            ];
+
+            return allExpensesForDay;
+        }
+
+        // Função para mostrar detalhes das contas em um modal
+        function showBillsForDay(date) {
+            const bills = getBillsForDate(date);
+            const formattedDate = date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            
+            billDetailsTitle.textContent = `Contas para ${formattedDate}`;
+            billDetailsList.innerHTML = ''; // Limpa a lista anterior
+            noBillsMessage.style.display = 'none'; // Esconde a mensagem de "nenhuma conta"
+
+            if (bills.length === 0) {
+                noBillsMessage.style.display = 'block';
+            } else {
+                bills.forEach(bill => {
+                    const billItem = document.createElement('div');
+                    billItem.className = 'bill-item';
+                    const status = bill.paid ? ' (Paga)' : ' (Pendente)';
+                    billItem.innerHTML = `
+                        <strong>${bill.description}</strong>
+                        <span>R$ ${bill.amount.toFixed(2)} - Categoria: ${bill.category || 'N/A'}${status}</span>
+                    `;
+                    billDetailsList.appendChild(billItem);
+                });
+            }
+            billDetailsModal.style.display = 'flex'; // Mostra o modal
+        }
+
+        // Função para fechar o modal de detalhes das contas
+        function closeBillDetailsModal() {
+            billDetailsModal.style.display = 'none';
+        }
+
+        // Event Listeners para navegação do calendário
+        prevMonthBtn.addEventListener('click', () => {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+            renderCalendar();
+        });
+
+        nextMonthBtn.addEventListener('click', () => {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+            renderCalendar();
+        });
+
+
+        // Funções globais para os botões
+        window.deleteTransaction = deleteTransaction;
+        window.markAsPaid = markAsPaid;
+        window.editTransaction = editTransaction;
+        window.deleteCategory = deleteCategory;
+        window.closeEditModal = closeEditModal;
+        window.showBillsForDay = showBillsForDay;
+        window.closeBillDetailsModal = closeBillDetailsModal;
     </script>
 </body>
 </html>
